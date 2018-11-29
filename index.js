@@ -2,9 +2,8 @@ var http = require('http');
 var fs = require('fs');
 
 var server = http.createServer(function(req, res){
-  fs.readFile('app/index.html', function(err, data){
-    res.end(data);
-  })
+  fs.rea
 })
+console.log('Hello.');
 
-server.listen(3000);
+server.listen(3001);
