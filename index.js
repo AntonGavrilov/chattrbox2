@@ -8,9 +8,6 @@ var handleError = function(err, res){
 }
 
 var server = http.createServer(function(req, res){
-<<<<<<< HEAD
-  fs.rea
-=======
 
   var filePath = extract(req.url);
 
@@ -23,7 +20,6 @@ var server = http.createServer(function(req, res){
       res.end(data)
     }
   })
->>>>>>> 3c2010fbcf210185538a3440dd081e4221834428
 })
 console.log('Hello.');
 
