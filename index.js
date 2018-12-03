@@ -1,34 +1,9 @@
-var http = require('http');
-var fs = require('fs');
-var extract = require('./extract');
-const mime = require('mime/lite');
+var server = require('./server');
+var wss = require('./websockets-server');
 
 
-var handleError = function(err, res){
-  filePath = extract("/404.html");
-  console.log(filePath);
-  handleDataFromFile(filePath, res);
-}
+var myserver1 = new server(3003);
 
-var server = http.createServer(function(req, res){
-
-  var filePath = extract(req.url);
-  handleDataFromFile(filePath, res);
-})
-
-
-var handleDataFromFile = function(filePath, res){
-  console.log(mime.getType(filePath));
-
-  fs.readFile(filePath, function(err, data){
-    if(err){
-      handleError(err, res);
-      return;
-    }else{
-      res.end(data)
-    }
-  })
-}
-
-console.log('Hello.');
-server.listen(3002);
+myserver1.Start(function(res){
+  console.log("hello from my server")
+}, "app")
