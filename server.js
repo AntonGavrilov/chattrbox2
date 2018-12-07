@@ -4,33 +4,32 @@ var extract = require('./extract');
 const mime = require('mime/lite');
 var FileStore = require('./fileStore');
 
-var Server = function(_port){
+var Server = function(_port) {
   this.port = _port;
-}
+  this.Start = async function(func, staticFolder) {
 
-Server.prototype.Start = async function(func, staticFolder){
+    var server = http.createServer(async function(req, res) {
 
-    var server = http.createServer(async function(req, res){
+      var fileStore = new FileStore();
+      fileStore.staticFolder = staticFolder;
 
-    var fileStore = new FileStore();
-    fileStore.staticFolder = staticFolder;
+      try {
+        res.end(await fileStore.FromURL(req.url));
+        func(res);
 
-    try {
-      res.end(await fileStore.FromURL(req.url));
-      func(res);
+      } catch (e) {
 
-    } catch (e) {
+        console.log("something wrong");
 
-      console.log("something wrong");
+      } finally {
 
-    } finally {
+      }
+    })
 
-    }
-  })
+    server.listen(this.port);
 
-  server.listen(this.port);
-
-  console.log("The server is runing...")
+    console.log("The server is runing...")
+  }
 }
 
 module.exports = Server;
