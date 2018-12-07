@@ -34,6 +34,9 @@ ws.on('connection', function(socket){
                 && clientSocket.clientIsVerified)
               clientSocket.send(data);
           })
+      }else
+      {
+        this.send("This is the silent chat. Password is required")
       }
     });
 });
