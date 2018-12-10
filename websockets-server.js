@@ -13,17 +13,16 @@ var messages = [];
 
 console.log('websockets server stared');
 
-ws.onUserVerification = function(fn){
+ws.subscribeVerification = function(fn){
   if(fn != undefined)
-    fn(this);
+    this.onVerification = fn;
 }
 
-var bot = new Bot('http://localhost:3002', ws);
+var bot = new Bot('http://localhost:3002', "vasya",ws);
 
 ws.on('connection', function(socket, req){
       console.log('client connection esteblished');
       socket.clientIsVerified = false;
-
       socket.send("enter your name:");
 
       socket.on('message', function(data) {
@@ -32,7 +31,7 @@ ws.on('connection', function(socket, req){
           if (this.clientIsVerified == false){
               this.clientIsVerified = true;
               this.name = data;
-              ws.onUserVerification(socket);
+              ws.onVerification(socket);
               messages.forEach((msg) => {
                 this.send(msg.username + ": " + msg.text);
               })
