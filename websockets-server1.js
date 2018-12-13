@@ -18,10 +18,12 @@ ws.subscribeVerification = function(fn){
     this.onVerification = fn;
 }
 
+var bot = new Bot('http://localhost:3002', "vasya",ws);
 
 ws.on('connection', function(socket, req){
       console.log('client connection esteblished');
       socket.clientIsVerified = true;
+      socket.send("enter your name:");
 
       socket.on('message', function(data) {
           console.log('message received: ' + data);
@@ -40,8 +42,9 @@ ws.on('connection', function(socket, req){
               message['text'] = data;
               messages.push(message);
               ws.clients.forEach((clientSocket) => {
-                if (clientSocket.clientIsVerified) {
-                  clientSocket.send(message.text);
+                if (socket != clientSocket &&
+                  clientSocket.clientIsVerified) {
+                  clientSocket.send(message.username + ": " + message.text);
                 }
               })
             }
