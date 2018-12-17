@@ -21,13 +21,34 @@ function registerMassageHandler(handlerFunction){
   };
 }
 
+function registerCloserHandler(handlerfunction){
+  socket.onclose = (e)=>{
+    console.log('close');
+    handlerfunction(e);
+  };
+}
+
+function close(){
+  socket.close();
+}
+
 function sendMessage(payload){
   socket.send(JSON.stringify(payload));
 }
 
-export default{
+function getState(){
+  console.log("state " + socket.readyState)
+  return socket.readyState;
+}
+
+var ret = {
+  getState,
   init,
   registerOpenHandler,
   registerMassageHandler,
-  sendMessage
+  sendMessage,
+  registerCloserHandler,
+  close
 }
+
+export  { ret }

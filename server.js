@@ -27,8 +27,7 @@ var Server = function(_port) {
     })
 
     server.listen(this.port);
-
-    console.log("The server is runing...")
+      console.log("The server "+ this.port+" is runing...");
   }
 }
 
