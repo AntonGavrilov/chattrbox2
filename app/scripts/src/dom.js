@@ -1,4 +1,15 @@
-import $ from 'jquery'
+import $ from 'jquery';
+import md5 from 'crypto-js/md5';
+
+function createGravatarUrl(username) {
+  let userhash = md5(username);
+  return `http://www.gravatar.com/avatar/${userhash.toString()}`;
+}
+
+export function promptForUsername(){
+  let username = prompt('Ennter a username');
+  return  username.toLowerCase();
+}
 
 export class ChatForm{
   constructor(formSel, InputSel){
@@ -24,9 +35,10 @@ export class ChatList{
   }
 
     drawMessage({user: u, timestamp: t, message: m}){
+
       let $messageRow = $('<li>', {
-        'class': 'message-username',
-        text: u})
+        'class': 'message-row'
+      })
 
       if(this.username == u){
         $messageRow.addClass('me');
@@ -35,20 +47,29 @@ export class ChatList{
       let $message = $('<p>');
 
       $message.append($('<span>', {
+        'class': 'message-username',
+        text: u
+      }));
+
+      $message.append($('<span>', {
         'class': 'timestamp',
-        'data-time': t,
-        text: (new Date(t)).getTime()
+        'data-time' : t,
+        text: (new Date(t)).Get
       }))
 
       $message.append($('<span>', {
         'class': 'message-message',
         text: m
-      }));
+      }))
 
+      let $img = $('<img>', {
+        src: createGravatarUrl(u),
+        title: u
+      })
+
+      $messageRow.append($img);
       $messageRow.append($message);
       this.$list.append($messageRow);
       $messageRow.get(0).scrollIntoView();
-
-
   }
 }

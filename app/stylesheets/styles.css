@@ -43,7 +43,8 @@ ul, ul.panel-body {
 
 .me {
   /* justify-content: flex-end; */
-  flex-direction: row-reverse;      }
+  flex-direction: row-reverse;
+}
 
 .me img{
   padding-right: 0;
@@ -70,4 +71,3 @@ ul, ul.panel-body {
   font-style: italic;
   /*        display: block; */
 }
-
