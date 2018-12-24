@@ -1,4 +1,4 @@
-class Strore{
+class Store{
   constructor(storageApi){
     this.api = storageApi;
   }
@@ -9,5 +9,12 @@ class Strore{
 
   set(value){
     this.api.setItem(this.key, value)
+  }
+}
+
+export class UserStore extends Store{
+  constructor(key){
+    super(sessionStorage);
+    this.key = key;
   }
 }
