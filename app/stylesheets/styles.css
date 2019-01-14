@@ -28,7 +28,7 @@ ul, ul.panel-body {
 .message-row {
   list-style-type: none;
   padding: 4px 12px;
-  display: flex;
+  display: none;
 }
 
 .message-row img {

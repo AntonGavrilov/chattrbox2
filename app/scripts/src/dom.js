@@ -86,5 +86,7 @@ export class ChatList {
     $messageRow.append($message);
     this.$list.append($messageRow);
     $messageRow.get(0).scrollIntoView();
+    $messageRow.show("slow");
+    $messageRow.css('display', 'flex');
   }
 }
