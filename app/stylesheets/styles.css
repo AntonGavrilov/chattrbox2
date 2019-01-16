@@ -31,6 +31,11 @@ ul, ul.panel-body {
   display: none;
 }
 
+.is-new-message{
+  background: maroon;
+  transition: transform 0ms;
+}
+
 .message-row img {
   padding-right: 1em;
   /* flex: auto; */

@@ -86,7 +86,17 @@ export class ChatList {
     $messageRow.append($message);
     this.$list.append($messageRow);
     $messageRow.get(0).scrollIntoView();
-    $messageRow.show("slow");
+    //$messageRow.fadeToggle("slow");
     $messageRow.css('display', 'flex');
-  }
+
+    $messageRow.animate({
+      opacity: 0.25
+    },
+    0
+    ,function(){
+      $messageRow.animate({
+        opacity: 1
+      }, 6000)
+    })
+}
 }
