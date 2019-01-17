@@ -28,13 +28,19 @@ ul, ul.panel-body {
 .message-row {
   list-style-type: none;
   padding: 4px 12px;
-  display: flex;
+  display: none;
+  transition:  5000ms;
+}
+
+.is-new-message{
+  background: RGB(255, 204, 219);
 }
 
 .message-row img {
   padding-right: 1em;
   /* flex: auto; */
   border-radius: 15px;
+
 }
 
 .message-row p {

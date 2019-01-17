@@ -86,5 +86,18 @@ export class ChatList {
     $messageRow.append($message);
     this.$list.append($messageRow);
     $messageRow.get(0).scrollIntoView();
-  }
+    $messageRow.css('display', 'flex');
+
+    var curTime = new Date();
+    var msgTime = new Date();
+     msgTime.setTime(t);
+
+    if(curTime <= msgTime)
+    {
+      $messageRow.addClass('is-new-message');
+      setTimeout(function () {
+        $messageRow.removeClass('is-new-message');
+      }, 2000);
+    }
+}
 }
