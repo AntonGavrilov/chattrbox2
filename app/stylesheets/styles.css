@@ -12,13 +12,24 @@ body {
   flex-direction: column;
 }
 .chat-messages {
-  flex: 3;
   overflow-y: auto;
+  flex: 4 1 0px;
+}
+
+.chat-users {
+  overflow-y: auto;
+  flex: 1 1 0px;
 }
 
 ul, ul.panel-body {
   margin: 0;
   padding: 0;
+}
+
+.chat{
+  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
 }
 
 .odd {
