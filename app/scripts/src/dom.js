@@ -48,7 +48,8 @@ export class ChatList {
   drawMessage({
     user: u,
     timestamp: t,
-    message: m
+    message: m,
+    isNewMessage: isNewMessage
   }) {
 
     let $messageRow = $('<li>', {
@@ -88,16 +89,13 @@ export class ChatList {
     $messageRow.get(0).scrollIntoView();
     $messageRow.css('display', 'flex');
 
-    var curTime = new Date();
-    var msgTime = new Date();
-     msgTime.setTime(t);
-
-    if(curTime <= msgTime)
-    {
+    if(isNewMessage){
       $messageRow.addClass('is-new-message');
-      setTimeout(function () {
+      setTimeout(function() {
         $messageRow.removeClass('is-new-message');
       }, 2000);
     }
-}
+    $messageRow.get(0).scrollIntoView();
+
+  }
 }
