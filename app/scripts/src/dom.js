@@ -92,12 +92,10 @@ export class ChatList {
     var msgTime = new Date();
      msgTime.setTime(t);
 
-    if(curTime <= msgTime)
-    {
+
       $messageRow.addClass('is-new-message');
       setTimeout(function () {
         $messageRow.removeClass('is-new-message');
       }, 2000);
-    }
 }
 }
