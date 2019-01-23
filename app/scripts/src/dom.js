@@ -29,6 +29,16 @@ export class ChatForm {
   }
 }
 
+
+export class RoomList{
+  constructor(list){
+    
+
+  }
+
+}
+
+
 export class ChatList {
   constructor(listSel, username) {
     this.$list = $(listSel);

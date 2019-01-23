@@ -3,47 +3,41 @@ var WebSocketServer = WebSocket.Server;
 var Bot = require('./bot');
 var port = 3002;
 var secretPassword = "antosha"
-var activeUsers = {};
+var activeUsers = [];
+var messages = [];
+let set = new roomList();
 
 var ws = new WebSocketServer({
   port: port
 });
 
-var messages = [];
+
 
 console.log('websockets server stared');
 
-ws.subscribeVerification = function(fn){
-  if(fn != undefined)
+ws.subscribeVerification = function(fn) {
+  if (fn != undefined)
     this.onVerification = fn;
 }
 
 
-ws.on('connection', function(socket, req){
-      console.log('client connection esteblished');
-      socket.clientIsVerified = true;
+ws.on('connection', function(socket, req) {
+  console.log('client connection esteblished');
 
-      socket.on('message', function(data) {
-          console.log('message received: ' + data);
+  socket.on('message', function(data) {
+    console.log('message received: ' + data);
+    var message = {};
+    message = JSON.parse(data);
 
-          if (this.clientIsVerified == false){
-              this.clientIsVerified = true;
-              this.name = data;
-              ws.onVerification(socket);
-              messages.forEach((msg) => {
-                this.send(msg.username + ": " + msg.text);
-              })
-            }else
-            {
-              var message = {};
-              message['username'] = this.name;
-              message['text'] = data;
-              messages.push(message);
-              ws.clients.forEach((clientSocket) => {
-                if (clientSocket.clientIsVerified) {
-                  clientSocket.send(message.text);
-                }
-              })
-            }
-          });
-      });
+    this.username = message.user;
+    this.room = message.user
+    roomList.add(this.room)
+    message['text'] = data;
+    messages.push(message);
+    ws.clients.forEach((clientSocket) => {
+      if(clientSocket.room == this.room){
+        clientSocket.send(message.text);
+      }
+    })
+  });
+});
