@@ -13,6 +13,8 @@ var Server = function(_port) {
       var fileStore = new FileStore();
       fileStore.staticFolder = staticFolder;
 
+      console.log(mime.getType(req.url) + " " + req.url);
+
       try {
         res.end(await fileStore.FromURL(req.url));
         func(res);

@@ -5,7 +5,7 @@ var port = 3002;
 var secretPassword = "antosha"
 var activeUsers = [];
 var messages = [];
-let set = new roomList();
+let roomList = new Set();
 
 var ws = new WebSocketServer({
   port: port
@@ -28,12 +28,11 @@ ws.on('connection', function(socket, req) {
     console.log('message received: ' + data);
     var message = {};
     message = JSON.parse(data);
-
     this.username = message.user;
     this.room = message.user
-    roomList.add(this.room)
     message['text'] = data;
     messages.push(message);
+    roomList.add(this.room);
     ws.clients.forEach((clientSocket) => {
       if(clientSocket.room == this.room){
         clientSocket.send(message.text);
