@@ -25,14 +25,23 @@ export class ChatForm {
       submitCallback(val);
       this.$input.val('');
     });
-    this.$form.find('button').on('click', () => this.$form.submit())
+    this.$form.find('btn btn-default').on('click', () => this.$form.submit())
   }
 }
 
 
 export class RoomList{
   constructor(list){
-    
+    this.$list = list;
+
+
+  }
+
+  drawRoom(name){
+    let $messageRow = $('<li>', {
+      'class': 'room-row',
+      'text': name
+    })
 
   }
 

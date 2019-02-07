@@ -18,7 +18,7 @@ const ROOMLIST_SELECTOR = '[data-chat="message-list"]'
 let userStore = new UserStore('x-chattrbox/u');
 let messageStore = new MessageStore('x-chattrbox/m');
 let username = userStore.get();
-let currentRoom = 'mainRoom'
+let currentRoom = 'mainRoom';
 
 if (!username) {
   username = promptForUsername();
@@ -30,11 +30,12 @@ class ChatApp {
     socket.init('ws://localhost:3002');
     this.chatFrom = new ChatForm(FORM_SELECTOR, INPUT_SELECTOR);
     this.chatList = new ChatList(LIST_SELECTOR, username);
+    this.roomList = new ChatList(ROOMLIST_SELECTOR);
 
     var messages = messageStore.get();
 
     for (var i = 0; i < messages.length; i++) {
-      let message = new ChatMessage(messages[i]);
+      let message = new ChatMessage(messages[i], "message");
       message.isNewMessage = false;
       this.chatList.drawMessage(message.serialize());
     }
@@ -42,17 +43,28 @@ class ChatApp {
     socket.registerOpenHandler(() => {
       this.chatFrom.init((data) => {
         let message = new ChatMessage({
-          message: data
+          message: data,
+          messageType: "message"
         });
         socket.sendMessage(message.serialize());
       })
+      var roomListMessage = new ChatMessage("");
+      roomListMessage.messageType = "roomList";
+      socket.sendMessage(roomListMessage.serialize());
 
     })
 
     socket.registerMassageHandler(data => {
       let message = new ChatMessage(data);
-      this.chatList.drawMessage(message.serialize());
-      messageStore.set(message);
+
+      if(message.messageType == "message")
+      {
+        this.chatList.drawMessage(message.serialize());
+        messageStore.set(message);
+      }else if(message.messageType == "roomList"){
+        var m = message.serialize()
+      }
+
     })
 
     socket.registerCloserHandler(e => {
@@ -72,6 +84,7 @@ class ChatApp {
 class ChatMessage {
   constructor({
     message: m,
+    messageType: mt,
     user: u = username,
     room: r = currentRoom,
     timestamp: t = (new Date()).getTime()
@@ -80,7 +93,8 @@ class ChatMessage {
     this.user = u;
     this.timestamp = t;
     this.room = r,
-      this.isNewMessage = true;
+    this.messageType = mt,
+    this.isNewMessage = true;
   }
 
   serialize() {
@@ -89,7 +103,8 @@ class ChatMessage {
       message: this.message,
       room: this.room,
       timestamp: this.timestamp,
-      isNewMessage: this.isNewMessage
+      isNewMessage: this.isNewMessage,
+      messageType: this.messageType
     }
   }
 }
