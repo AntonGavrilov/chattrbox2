@@ -8,12 +8,13 @@ import {
 import {
   ChatForm,
   ChatList,
+  RoomList,
   promptForUsername
 } from './dom';
 const FORM_SELECTOR = '[data-chat="chat-form"]';
 const INPUT_SELECTOR = '[data-chat="message-input"]'
 const LIST_SELECTOR = '[data-chat="message-list"]'
-const ROOMLIST_SELECTOR = '[data-chat="message-list"]'
+const ROOMLIST_SELECTOR = '[data-chat="room-list"]'
 
 let userStore = new UserStore('x-chattrbox/u');
 let messageStore = new MessageStore('x-chattrbox/m');
@@ -30,7 +31,7 @@ class ChatApp {
     socket.init('ws://localhost:3002');
     this.chatFrom = new ChatForm(FORM_SELECTOR, INPUT_SELECTOR);
     this.chatList = new ChatList(LIST_SELECTOR, username);
-    this.roomList = new ChatList(ROOMLIST_SELECTOR);
+    this.roomList = new RoomList(ROOMLIST_SELECTOR);
 
     var messages = messageStore.get();
 
@@ -48,23 +49,36 @@ class ChatApp {
         });
         socket.sendMessage(message.serialize());
       })
+
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize());
-
     })
 
     socket.registerMassageHandler(data => {
       let message = new ChatMessage(data);
 
-      if(message.messageType == "message")
-      {
+      if (message.messageType == "message") {
         this.chatList.drawMessage(message.serialize());
         messageStore.set(message);
-      }else if(message.messageType == "roomList"){
-        var m = message.serialize()
+      } else if (message.messageType == "roomList") {
+        var rooms = JSON.parse(message.message);
+        this.roomList.drawRoomList(rooms, currentRoom);
       }
+    })
 
+    this.chatFrom.registerNewRoomHandler(()=>{
+      var room = prompt('Enter a room name');;
+      currentRoom = room;
+      this.roomList.drawRoom(currentRoom);
+      var roomListMessage = new ChatMessage("");
+      roomListMessage.messageType = "roomList";
+      socket.sendMessage(roomListMessage.serialize())
+    })
+
+    this.roomList.registerRoomChangeHandler((newRoom)=>{
+      this.chatList.clearChatList();
+      currentRoom = newRoom;
     })
 
     socket.registerCloserHandler(e => {
@@ -93,8 +107,8 @@ class ChatMessage {
     this.user = u;
     this.timestamp = t;
     this.room = r,
-    this.messageType = mt,
-    this.isNewMessage = true;
+      this.messageType = mt,
+      this.isNewMessage = true;
   }
 
   serialize() {

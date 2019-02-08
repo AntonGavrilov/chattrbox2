@@ -60,6 +60,12 @@ ul, ul.panel-body {
   /* flex: auto; */
 }
 
+.currentRoom {
+  font-weight: bold;
+  /* flex: auto; */
+}
+
+
 .me {
   /* justify-content: flex-end; */
   flex-direction: row-reverse;

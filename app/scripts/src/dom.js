@@ -27,24 +27,56 @@ export class ChatForm {
     });
     this.$form.find('btn btn-default').on('click', () => this.$form.submit())
   }
+
+  registerNewRoomHandler(newRoomCallBack) {
+    $('.btn.btn-newRoom').on('click', () => newRoomCallBack())
+  }
 }
 
 
-export class RoomList{
-  constructor(list){
-    this.$list = list;
-
-
+export class RoomList {
+  constructor(list) {
+    this.$list = $(list);
   }
 
-  drawRoom(name){
+  registerRoomChangeHandler(roomChangeCallback){
+    this.roomChangeCallback = roomChangeCallback;
+  }
+
+
+  drawRoomList(roomList, currentRoom) {
+    var b = 1;
+
+    $(".room-row").each(function(index) {
+      $(this).remove();
+    });
+
+    roomList.forEach((room, i, arr) => {
+      this.drawRoom(room, currentRoom);
+    })
+  }
+
+  drawRoom(room, currentRoom) {
     let $messageRow = $('<li>', {
       'class': 'room-row',
-      'text': name
+      'text': room
     })
 
-  }
+    if(currentRoom == room){
+      $messageRow.addClass('currentRoom');
+    }
 
+    $messageRow.on('click', (event)=>{
+      var curRoom = event.target.innerText;
+
+      this.roomChangeCallback(curRoom);
+
+      $('.currentRoom').removeClass("currentRoom");
+
+      $(event.target).addClass('currentRoom');
+    })
+    this.$list.append($messageRow);
+  }
 }
 
 
@@ -63,6 +95,12 @@ export class ChatList {
   }
 
   init() {}
+
+  clearChatList(){
+    $(".message-row").each(function(index) {
+      $(this).remove();
+    });
+  }
 
   drawMessage({
     user: u,
@@ -108,7 +146,7 @@ export class ChatList {
     $messageRow.get(0).scrollIntoView();
     $messageRow.css('display', 'flex');
 
-    if(isNewMessage){
+    if (isNewMessage) {
       $messageRow.addClass('is-new-message');
       setTimeout(function() {
         $messageRow.removeClass('is-new-message');

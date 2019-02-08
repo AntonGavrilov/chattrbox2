@@ -44,7 +44,7 @@ ws.on('connection', function(socket, req) {
       })
 
     }else if(message.messageType == "roomList"){
-      message.message = JSON.stringify(roomList);
+      message.message = JSON.stringify(Array.from(roomList));
       socket.send(JSON.stringify(message));
     }
   });
