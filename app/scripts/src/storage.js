@@ -25,20 +25,38 @@ export class MessageStore extends Store {
     this.key = key;
   }
 
-  get() {
+  get(room) {
+    var jsonMessages = super.get(this.key);
     var messagearr = [];
+    var messages;
 
-    if (super.get(this.key) != null)
-      var messagearr = JSON.parse(super.get(this.key));
 
-    return  messagearr;
+    if(jsonMessages != null)  {
+      messages = JSON.parse(jsonMessages);
+      if (room in messages)
+        messagearr = messages[room];
+    }
+
+    return messagearr;
   }
 
-  set(value) {
+  set(message, room) {
     var messagearr = [];
-    if (super.get(this.key) != null)
-      var messagearr = JSON.parse(super.get(this.key));
-    messagearr.push(value);
-    super.set(JSON.stringify(messagearr))
+    var jsonMessages = super.get(this.key);
+    var messages;
+
+    if (jsonMessages == null) {
+      messages = {};
+    } else {
+      messages = JSON.parse(jsonMessages);
+    }
+
+    if (messages[room] != undefined)
+      messagearr = messages[room];
+
+    messagearr.push(message);
+    messages[room] = messagearr;
+
+    super.set(JSON.stringify(messages))
   }
 }

@@ -70,9 +70,7 @@ export class RoomList {
       var curRoom = event.target.innerText;
 
       this.roomChangeCallback(curRoom);
-
       $('.currentRoom').removeClass("currentRoom");
-
       $(event.target).addClass('currentRoom');
     })
     this.$list.append($messageRow);

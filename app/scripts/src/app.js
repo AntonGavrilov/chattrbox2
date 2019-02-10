@@ -33,7 +33,7 @@ class ChatApp {
     this.chatList = new ChatList(LIST_SELECTOR, username);
     this.roomList = new RoomList(ROOMLIST_SELECTOR);
 
-    var messages = messageStore.get();
+    var messages = messageStore.get(currentRoom);
 
     for (var i = 0; i < messages.length; i++) {
       let message = new ChatMessage(messages[i], "message");
@@ -60,7 +60,7 @@ class ChatApp {
 
       if (message.messageType == "message") {
         this.chatList.drawMessage(message.serialize());
-        messageStore.set(message);
+        messageStore.set(message, currentRoom);
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
@@ -68,7 +68,8 @@ class ChatApp {
     })
 
     this.chatFrom.registerNewRoomHandler(()=>{
-      var room = prompt('Enter a room name');;
+      var room = prompt('Enter a room name');
+      this.chatList.clearChatList();
       currentRoom = room;
       this.roomList.drawRoom(currentRoom);
       var roomListMessage = new ChatMessage("");
@@ -79,6 +80,18 @@ class ChatApp {
     this.roomList.registerRoomChangeHandler((newRoom)=>{
       this.chatList.clearChatList();
       currentRoom = newRoom;
+
+      var roomListMessage = new ChatMessage("");
+      roomListMessage.messageType = "roomList";
+      socket.sendMessage(roomListMessage.serialize())
+
+      var messages = messageStore.get(currentRoom);
+
+      for (var i = 0; i < messages.length; i++) {
+        let message = new ChatMessage(messages[i], "message");
+        message.isNewMessage = false;
+        this.chatList.drawMessage(message.serialize());
+      }
     })
 
     socket.registerCloserHandler(e => {
