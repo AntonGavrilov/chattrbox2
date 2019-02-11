@@ -31,6 +31,10 @@ export class ChatForm {
   registerNewRoomHandler(newRoomCallBack) {
     $('.btn.btn-newRoom').on('click', () => newRoomCallBack())
   }
+
+  registerJoinRoomHandler(newRoomCallBack) {
+    $('.btn.btn-joinRoom').on('click', () => newRoomCallBack())
+  }
 }
 
 

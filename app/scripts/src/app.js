@@ -19,7 +19,7 @@ const ROOMLIST_SELECTOR = '[data-chat="room-list"]'
 let userStore = new UserStore('x-chattrbox/u');
 let messageStore = new MessageStore('x-chattrbox/m');
 let username = userStore.get();
-let currentRoom = 'mainRoom';
+let currentRoom = 'main';
 
 if (!username) {
   username = promptForUsername();
@@ -71,11 +71,30 @@ class ChatApp {
       var room = prompt('Enter a room name');
       this.chatList.clearChatList();
       currentRoom = room;
-      this.roomList.drawRoom(currentRoom);
+      var newRoomMessage = new ChatMessage("");
+      newRoomMessage.messageType = "newRoom";
+      newRoomMessage.message = currentRoom;
+      socket.sendMessage(newRoomMessage.serialize())
+
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize())
     })
+
+    this.chatFrom.registerJoinRoomHandler(()=>{
+      var room = prompt('Enter a room name');
+      this.chatList.clearChatList();
+      var newRoomMessage = new ChatMessage("");
+      newRoomMessage.messageType = "joinRoom";
+      newRoomMessage.message = room;
+      socket.sendMessage(newRoomMessage.serialize())
+      currentRoom = room;
+      var roomListMessage = new ChatMessage("");
+      roomListMessage.messageType = "roomList";
+      socket.sendMessage(roomListMessage.serialize())
+    })
+
+
 
     this.roomList.registerRoomChangeHandler((newRoom)=>{
       this.chatList.clearChatList();
