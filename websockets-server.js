@@ -5,6 +5,8 @@ var port = 3002;
 var activeUsers = new Map();
 var messages = [];
 let roomList = {};
+var currentUser;
+var currentRoom;
 
 class Emmiter {
   constructor() {
@@ -12,17 +14,18 @@ class Emmiter {
   }
 
   subscribe(eventName, fn) {
-    if (events[eventName] = null) {
-      events[eventName] = [];
+    if (this.events[eventName] == null) {
+      this.events[eventName] = [];
     }
-    events[eventName].push(fn);
+    this.events[eventName].push(fn);
   }
 
   emit(eventName, data) {
-    var events = eventName[eventName];
-    if (events) {
+    var fnarr = this.events[eventName];
+
+    if (fnarr) {
       fnarr.forEach((fn) => {
-        fn.call(null, data)
+        fn.call(this, data)
       })
     }
   }
@@ -84,25 +87,70 @@ ws.on('connection', function(socket, req) {
   mainRoom.addUser(newUser);
 
   emmiter.subscribe("joinRoom", (data) =>{
-    var room = roomList[message.message];
+    var room = roomList[data.message];
     currentUser.joinRoom(room);
     room.addUser(currentUser);
 
   })
+
+
+  emmiter.subscribe("newRoom", (data) =>{
+    var message = {};
+    message = JSON.parse(data);
+    var newRoom = new Room(message.message);
+    currentUser.joinRoom(newRoom);
+
+  })
+
+  emmiter.subscribe("joinRoom", (data) =>{
+    var message = {};
+    message = JSON.parse(data);
+    var room = roomList[data.message];
+    currentUser.joinRoom(room);
+    room.addUser(currentUser);
+
+  })
+
+  emmiter.subscribe("roomList", (data) =>{
+    var message = {};
+    message = JSON.parse(data);
+
+    var curRoomList = [];
+    currentUser.roomList.forEach(curRoom => {
+      curRoomList.push(curRoom.name)
+    })
+    message.message = JSON.stringify(curRoomList);
+    socket.send(JSON.stringify(message));
+
+  })
+
+  emmiter.subscribe("message", (data) =>{
+    var message = {};
+    message = JSON.parse(data);
+    message['text'] = data;
+    messages.push(message);
+    activeUsers.forEach((user, socket, map) => {
+      if (user.roomList.includes(currentUser.currentRoom)) {
+        socket.send(data);
+      }
+    })
+  })
+
 
   socket.on('message', function(data) {
     console.log('message received: ' + data);
     var message = {};
     message = JSON.parse(data);
 
-    var currentUser = activeUsers.get(socket);
-    var currentRoom = roomList[message.room];
+    currentUser = activeUsers.get(socket);
+    currentRoom = roomList[message.room];
 
     if (currentRoom != undefined &&
       currentRoom != currentUser.currentRoom)
       currentUser.changeCurrentRoom(currentRoom);
 
-    emmiter.emit(message.messageType)
+    emmiter.emit(message.messageType, data)
+    /*
     if (message.messageType == "joinRoom") {
       var room = roomList[message.message];
       currentUser.joinRoom(room);
@@ -129,5 +177,6 @@ ws.on('connection', function(socket, req) {
       message.message = JSON.stringify(curRoomList);
       socket.send(JSON.stringify(message));
     }
+    */
   });
 });
