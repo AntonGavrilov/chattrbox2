@@ -45,7 +45,8 @@ class ChatApp {
       this.chatFrom.init((data) => {
         let message = new ChatMessage({
           message: data,
-          messageType: "message"
+          messageType: "message",
+          isNewMessage: true
         });
         socket.sendMessage(message.serialize());
       })
@@ -59,15 +60,18 @@ class ChatApp {
       let message = new ChatMessage(data);
 
       if (message.messageType == "message") {
-        this.chatList.drawMessage(message.serialize());
-        messageStore.set(message, currentRoom);
+        if (message.room == currentRoom){
+          this.chatList.drawMessage(message.serialize());
+          message.readMessage();
+        }
+        messageStore.set(message, message.room);
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
       }
     })
 
-    this.chatFrom.registerNewRoomHandler(()=>{
+    this.chatFrom.registerNewRoomHandler(() => {
       var room = prompt('Enter a room name');
       this.chatList.clearChatList();
       currentRoom = room;
@@ -81,7 +85,7 @@ class ChatApp {
       socket.sendMessage(roomListMessage.serialize())
     })
 
-    this.chatFrom.registerJoinRoomHandler(()=>{
+    this.chatFrom.registerJoinRoomHandler(() => {
       var room = prompt('Enter a room name');
       this.chatList.clearChatList();
       var newRoomMessage = new ChatMessage("");
@@ -96,7 +100,7 @@ class ChatApp {
 
 
 
-    this.roomList.registerRoomChangeHandler((newRoom)=>{
+    this.roomList.registerRoomChangeHandler((newRoom) => {
       this.chatList.clearChatList();
       currentRoom = newRoom;
 
@@ -108,7 +112,6 @@ class ChatApp {
 
       for (var i = 0; i < messages.length; i++) {
         let message = new ChatMessage(messages[i], "message");
-        message.isNewMessage = false;
         this.chatList.drawMessage(message.serialize());
       }
     })
@@ -133,14 +136,19 @@ class ChatMessage {
     messageType: mt,
     user: u = username,
     room: r = currentRoom,
-    timestamp: t = (new Date()).getTime()
+    timestamp: t = (new Date()).getTime(),
+    isNewMessage: isnew
   }) {
     this.message = m;
     this.user = u;
     this.timestamp = t;
     this.room = r,
       this.messageType = mt,
-      this.isNewMessage = true;
+      this.isNewMessage = isnew;
+  }
+
+  readMessage(){
+    this.isNewMessage = false
   }
 
   serialize() {
@@ -152,6 +160,7 @@ class ChatMessage {
       isNewMessage: this.isNewMessage,
       messageType: this.messageType
     }
+
   }
 }
 
