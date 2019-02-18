@@ -10,6 +10,7 @@ class Server{
     this.clients = new Map();
     this.roomList = {};
     this.mainRoom = new clientmodule.Room("main");
+    this.roomList[this.mainRoom.name] = this.mainRoom;
     this.socket = new WebSocketServer({
       port: port
     });
@@ -25,12 +26,12 @@ class Server{
       newclient.joinRoom(this.mainRoom);
       this.clients.set(socket, newclient);
 
-
       newclient.on("joinRoom", (data) => {
         var message = {};
         message = JSON.parse(data);
         var room = this.roomList[data];
-        currentUser.joinRoom(room);
+        var currentClient = this.clients.get(socket);
+        currentClient.joinRoom(room);
         room.addUser(currentUser);
       })
 
@@ -38,14 +39,15 @@ class Server{
       newclient.on("newRoom", (data) => {
         var message = {};
         message = JSON.parse(data);
-        var newRoom = new Room(data);
-        this.roomList.push(newRoom);
-        this.currentUser.joinRoom(newRoom);
+        var newRoom = new clientmodule.Room(message.message);
+        this.roomList[newRoom.name] = this.mainRoom;
+        var currentClient = this.clients.get(socket);
+        currentClient.joinRoom(newRoom);
       })
 
 
       newclient.on("roomList", (data) => {
-        var message = {};        
+        var message = {};
         message = JSON.parse(data);
         var curRoomList = [];
         newclient.roomList.forEach(curRoom => {
@@ -57,7 +59,10 @@ class Server{
 
       newclient.on("message", (data) => {
 
-        var currentClient = clients.get(socket);
+        var message = {};
+        message = JSON.parse(data);
+
+        var currentClient = this.clients.get(socket);
         var currentRoom = this.roomList[message.room];
 
         if (currentRoom != undefined &&
@@ -67,12 +72,12 @@ class Server{
         var message = {};
         message = JSON.parse(data);
         message['text'] = data;
-        activeUsers.forEach((user, socket, map) => {
-          if (user.roomList.includes(currentUser.currentRoom)
-              && socket.isAlive == true) {
+        this.clients.forEach(function(user, socket, map){
+          var currentClient = this.clients.get(socket);
+          if (user.roomList.includes(currentClient.currentRoom)) {
             socket.send(data);
           }
-        })
+        },this)
       })
     })
   }
