@@ -1,6 +1,5 @@
 var WebSocket = require('ws');
 var WebSocketServer = WebSocket.Server;
-var Bot = require('./bot');
 var port = 3002;
 var activeUsers = new Map();
 var messages = [];
@@ -9,37 +8,37 @@ var currentUser;
 var currentRoom;
 
 
-class App{
-  constructor(){
-    this.socket = new WebSocketServer({
-      port: port
-    });
-    this.emmiter = new Emmiter();
+class ChatMessage {
+  constructor({
+    message: m,
+    messageType: mt,
+    user: u = username,
+    room: r = currentRoom,
+    timestamp: t = (new Date()).getTime(),
+    isNewMessage: isnew
+  }) {
+    this.message = m;
+    this.user = u;
+    this.timestamp = t;
+    this.room = r,
+      this.messageType = mt,
+      this.isNewMessage = isnew;
   }
 
-}
-
-
-class Emmiter {
-  constructor() {
-    this.events = [];
+  readMessage() {
+    this.isNewMessage = false
   }
 
-  subscribe(eventName, fn) {
-    if (this.events[eventName] == null) {
-      this.events[eventName] = [];
+  serialize() {
+    return {
+      user: this.user,
+      message: this.message,
+      room: this.room,
+      timestamp: this.timestamp,
+      isNewMessage: this.isNewMessage,
+      messageType: this.messageType
     }
-    this.events[eventName].push(fn);
-  }
 
-  emit(eventName, data) {
-    var fnarr = this.events[eventName];
-
-    if (fnarr) {
-      fnarr.forEach((fn) => {
-        fn.call(this, data)
-      })
-    }
   }
 }
 
@@ -94,7 +93,7 @@ ws.on('connection', function(socket, req) {
   activeUsers.set(socket, newUser);
   mainRoom.addUser(newUser);
 
-  emmiter.subscribe("joinRoom", (data) =>{
+  emmiter.subscribe("joinRoom", (data) => {
     var room = roomList[data.message];
     currentUser.joinRoom(room);
     room.addUser(currentUser);
@@ -102,7 +101,7 @@ ws.on('connection', function(socket, req) {
   })
 
 
-  emmiter.subscribe("newRoom", (data) =>{
+  emmiter.subscribe("newRoom", (data) => {
     var message = {};
     message = JSON.parse(data);
     var newRoom = new Room(message.message);
@@ -110,7 +109,7 @@ ws.on('connection', function(socket, req) {
 
   })
 
-  emmiter.subscribe("joinRoom", (data) =>{
+  emmiter.subscribe("joinRoom", (data) => {
     var message = {};
     message = JSON.parse(data);
     var room = roomList[data.message];
@@ -119,7 +118,7 @@ ws.on('connection', function(socket, req) {
 
   })
 
-  emmiter.subscribe("roomList", (data) =>{
+  emmiter.subscribe("roomList", (data) => {
     var message = {};
     message = JSON.parse(data);
 
@@ -132,7 +131,7 @@ ws.on('connection', function(socket, req) {
 
   })
 
-  emmiter.subscribe("message", (data) =>{
+  emmiter.subscribe("message", (data) => {
     var message = {};
     message = JSON.parse(data);
     message['text'] = data;
