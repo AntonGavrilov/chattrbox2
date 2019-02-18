@@ -8,6 +8,18 @@ let roomList = {};
 var currentUser;
 var currentRoom;
 
+
+class App{
+  constructor(){
+    this.socket = new WebSocketServer({
+      port: port
+    });
+    this.emmiter = new Emmiter();
+  }
+
+}
+
+
 class Emmiter {
   constructor() {
     this.events = [];
@@ -71,10 +83,6 @@ var ws = new WebSocketServer({
 
 console.log('websockets server stared');
 
-ws.subscribeVerification = function(fn) {
-  if (fn != undefined)
-    this.onVerification = fn;
-}
 
 var emmiter = new Emmiter();
 
@@ -150,33 +158,5 @@ ws.on('connection', function(socket, req) {
       currentUser.changeCurrentRoom(currentRoom);
 
     emmiter.emit(message.messageType, data)
-    /*
-    if (message.messageType == "joinRoom") {
-      var room = roomList[message.message];
-      currentUser.joinRoom(room);
-      room.addUser(currentUser);
-    } else if (message.messageType == "newRoom") {
-      var newRoom = new Room(message.message);
-      currentUser.joinRoom(newRoom);
-      roomList[newRoom.name] = newRoom;
-    } else if (message.messageType == "userInfo") {
-
-    } else if (message.messageType == "message") {
-      message['text'] = data;
-      messages.push(message);
-      activeUsers.forEach((user, socket, map) => {
-        if (user.roomList.includes(currentUser.currentRoom)) {
-          socket.send(data);
-        }
-      })
-    } else if (message.messageType == "roomList") {
-      var curRoomList = [];
-      currentUser.roomList.forEach(curRoom => {
-        curRoomList.push(curRoom.name)
-      })
-      message.message = JSON.stringify(curRoomList);
-      socket.send(JSON.stringify(message));
-    }
-    */
   });
 });
