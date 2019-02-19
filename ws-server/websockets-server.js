@@ -4,7 +4,7 @@ var WebSocket = require('ws');
 var WebSocketServer = WebSocket.Server;
 var port = 3002;
 
-class Server{
+class Server {
   constructor(port) {
     this.messages = new Map();
     this.clients = new Map();
@@ -18,8 +18,8 @@ class Server{
     this.socket.on('connection', (socket, req) => {
       var newclient = new clientmodule.ChatClient(socket);
 
-      newclient.registerMessageHandler((message)=>{
-        if(message.messageType == "message")
+      newclient.registerMessageHandler((message) => {
+        if (message.messageType == "message")
           this.messages.set(this.currentRoom, message);
       })
 
@@ -38,8 +38,24 @@ class Server{
       newclient.on("messageList", (data) => {
         var message = {};
         message = JSON.parse(data);
+
+        var lastSeenMsgDate = message.message;
         var currentClient = this.clients.get(socket);
-        message.message = JSON.stringify(currentClient.messages[message.room]);
+
+        var cachedMessages = currentClient.messages[message.room];
+        var outputMessages = [];
+
+        if(cachedMessages)
+        {
+          cachedMessages.forEach((m) => {
+            if(m.timestamp > lastSeenMsgDate){
+              outputMessages.push(m);
+            }
+          })
+        }
+
+
+        message.message = JSON.stringify(outputMessages);
         socket.send(JSON.stringify(message));
       })
 
@@ -77,15 +93,22 @@ class Server{
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
 
-        var message = {};
-        message = JSON.parse(data);
-        message['text'] = data;
-        this.clients.forEach(function(user, socket, map){
+        var messagearr = [];
+
+        if (currentClient.messages[message.room] != undefined)
+          messagearr = currentClient.messages[message.room];
+
+        messagearr.push(message);
+        currentClient.messages[message.room] = messagearr;
+
+
+        this.clients.forEach(function(user, socket, map) {
           var currentClient = this.clients.get(socket);
-          if (user.roomList.includes(currentClient.currentRoom)) {
+          if (user.roomList.includes(currentClient.currentRoom) &&
+            socket.readyState === WebSocket.OPEN) {
             socket.send(data);
           }
-        },this)
+        }, this)
       })
     })
   }

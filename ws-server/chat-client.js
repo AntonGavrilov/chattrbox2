@@ -17,14 +17,6 @@ class ChatClient{
       handlerFunction(message);
       this.emmiter.emit(message.messageType, socketmessage.data)
 
-      var messagearr = [];
-
-      if (messages[message.room] != undefined)
-        messagearr = messages[message.room];
-
-      messagearr.push(message);
-      messages[room] = messagearr;
-
       console.log('message received: ' + socketmessage.data);
 
     };

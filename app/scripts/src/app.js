@@ -15,13 +15,12 @@ const FORM_SELECTOR = '[data-chat="chat-form"]';
 const INPUT_SELECTOR = '[data-chat="message-input"]'
 const LIST_SELECTOR = '[data-chat="message-list"]'
 const ROOMLIST_SELECTOR = '[data-chat="room-list"]'
+let currentRoom = 'main';
 
 let userStore = new UserStore('x-chattrbox/u');
 let messageStore = new MessageStore('x-chattrbox/m');
 let lastSeenMsgDateStore = new MessageStore('x-chattrbox/lastseenmsg');
-var lastSeenMsgDate = userStore.get()
 let username = userStore.get();
-let currentRoom = 'main';
 
 if (!username) {
   username = promptForUsername();
@@ -41,7 +40,7 @@ class ChatApp {
       let message = new ChatMessage(messages[i], "message");
       message.isNewMessage = false;
       this.chatList.drawMessage(message.serialize());
-      lastSeenMsgDate = message.timestamp;
+      lastSeenMsgDateStore.set(message.timestamp, room);
     }
 
     socket.registerOpenHandler(() => {
@@ -58,28 +57,34 @@ class ChatApp {
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize());
 
-      var messageListMessage = new ChatMessage("");
-      roomListMessage.messageType = "messageList";      
-      socket.sendMessage(roomListMessage.serialize());
-
     })
 
     socket.registerMassageHandler(data => {
       let message = new ChatMessage(data);
 
       if (message.messageType == "message") {
-        if (message.room == currentRoom){
+        if (message.room == currentRoom) {
           this.chatList.drawMessage(message.serialize());
           message.readMessage();
-        }else{
-          this.roomList.updateMsgCountBadge(message.room);
+          lastSeenMsgDateStore.set(message.timestamp, currentRoom);
         }
         messageStore.set(message, message.room);
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
       } else if (message.messageType == "messageList") {
-        var rooms = JSON.parse(message.message);
+        var massgeList = JSON.parse(message.message);
+
+        massgeList.forEach((m) => {
+          messages.set(m, message.room);
+        })
+
+        var messages = messageStore.get(currentRoom);
+
+        for (var i = 0; i < messages.length; i++) {
+          let message = new ChatMessage(messages[i], "message");
+          this.chatList.drawMessage(message.serialize());
+        }
       }
     })
 
@@ -114,11 +119,18 @@ class ChatApp {
     this.roomList.registerRoomChangeHandler((newRoom) => {
       this.chatList.clearChatList();
       currentRoom = newRoom;
-      /*
+
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize())
-      */
+
+      var messageListMessage = new ChatMessage("");
+      messageListMessage.messageType = "messageList";
+      var [lastSeenMsgDate] = lastSeenMsgDateStore.get(currentRoom);
+
+      messageListMessage.message = lastSeenMsgDate;
+      socket.sendMessage(messageListMessage.serialize());
+
       var messages = messageStore.get(currentRoom);
 
       for (var i = 0; i < messages.length; i++) {
@@ -158,7 +170,7 @@ class ChatMessage {
       this.isNewMessage = isnew;
   }
 
-  readMessage(){
+  readMessage() {
     this.isNewMessage = false
   }
 
