@@ -6,7 +6,7 @@ class ChatClient{
     this.roomList = [];
     this.emmiter = new EventClientEmmiter();
     this.currentRoom = {};
-
+    this.messages = {};
   }
 
   registerMessageHandler(handlerFunction){
@@ -16,6 +16,15 @@ class ChatClient{
       message = JSON.parse(socketmessage.data);
       handlerFunction(message);
       this.emmiter.emit(message.messageType, socketmessage.data)
+
+      var messagearr = [];
+
+      if (messages[message.room] != undefined)
+        messagearr = messages[message.room];
+
+      messagearr.push(message);
+      messages[room] = messagearr;
+
       console.log('message received: ' + socketmessage.data);
 
     };

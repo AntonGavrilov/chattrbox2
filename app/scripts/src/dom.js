@@ -22,7 +22,8 @@ export class ChatForm {
     this.$form.submit((event) => {
       event.preventDefault();
       let val = this.$input.val();
-      submitCallback(val);
+      if(val != '')
+        submitCallback(val);
       this.$input.val('');
     });
     this.$form.find('btn btn-default').on('click', () => this.$form.submit())
@@ -47,6 +48,11 @@ export class RoomList {
     this.roomChangeCallback = roomChangeCallback;
   }
 
+  updateMsgCountBadge(roomId, count){
+    var msgCountBadge = this.$list.find('[roomid="' + roomId + '"]').children('.badge-pill');
+    let currentValue = parseInt(msgCountBadge[0].textContent) + 1;
+    msgCountBadge[0].textContent = currentValue;
+  }
 
   drawRoomList(roomList, currentRoom) {
     var b = 1;
@@ -62,20 +68,27 @@ export class RoomList {
 
   drawRoom(room, currentRoom) {
     let $messageRow = $('<li>', {
-      'class': 'room-row',
+      'class': 'list-group-item d-flex room-row',
+      'roomId': room,
       'text': room
     })
 
     if(currentRoom == room){
-      $messageRow.addClass('currentRoom');
+      $messageRow.addClass('active');
     }
 
-    $messageRow.on('click', (event)=>{
-      var curRoom = event.target.innerText;
+    let $msgCountBadge = $('<span>', {
+      'class': 'badge badge-primary badge-pill',
+      'text': 14
+    })
 
+    $messageRow.append($msgCountBadge)
+
+    $messageRow.on('click', (event) => {
+      var curRoom = $(event.target).attr('roomid');
       this.roomChangeCallback(curRoom);
-      $('.currentRoom').removeClass("currentRoom");
-      $(event.target).addClass('currentRoom');
+      $('.room-row.active').removeClass("active");
+      $(event.target).addClass('active');
     })
     this.$list.append($messageRow);
   }

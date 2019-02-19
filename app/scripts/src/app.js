@@ -18,6 +18,8 @@ const ROOMLIST_SELECTOR = '[data-chat="room-list"]'
 
 let userStore = new UserStore('x-chattrbox/u');
 let messageStore = new MessageStore('x-chattrbox/m');
+let lastSeenMsgDateStore = new MessageStore('x-chattrbox/lastseenmsg');
+var lastSeenMsgDate = userStore.get()
 let username = userStore.get();
 let currentRoom = 'main';
 
@@ -39,6 +41,7 @@ class ChatApp {
       let message = new ChatMessage(messages[i], "message");
       message.isNewMessage = false;
       this.chatList.drawMessage(message.serialize());
+      lastSeenMsgDate = message.timestamp;
     }
 
     socket.registerOpenHandler(() => {
@@ -54,6 +57,11 @@ class ChatApp {
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize());
+
+      var messageListMessage = new ChatMessage("");
+      roomListMessage.messageType = "messageList";      
+      socket.sendMessage(roomListMessage.serialize());
+
     })
 
     socket.registerMassageHandler(data => {
@@ -63,11 +71,15 @@ class ChatApp {
         if (message.room == currentRoom){
           this.chatList.drawMessage(message.serialize());
           message.readMessage();
+        }else{
+          this.roomList.updateMsgCountBadge(message.room);
         }
         messageStore.set(message, message.room);
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
+      } else if (message.messageType == "messageList") {
+        var rooms = JSON.parse(message.message);
       }
     })
 
@@ -99,15 +111,14 @@ class ChatApp {
     })
 
 
-
     this.roomList.registerRoomChangeHandler((newRoom) => {
       this.chatList.clearChatList();
       currentRoom = newRoom;
-
+      /*
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
       socket.sendMessage(roomListMessage.serialize())
-
+      */
       var messages = messageStore.get(currentRoom);
 
       for (var i = 0; i < messages.length; i++) {

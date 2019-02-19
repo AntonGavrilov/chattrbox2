@@ -29,10 +29,18 @@ class Server{
       newclient.on("joinRoom", (data) => {
         var message = {};
         message = JSON.parse(data);
-        var room = this.roomList[data];
+        var room = this.roomList[message.message];
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(room);
-        room.addUser(currentUser);
+        room.addClient(currentClient);
+      })
+
+      newclient.on("messageList", (data) => {
+        var message = {};
+        message = JSON.parse(data);
+        var currentClient = this.clients.get(socket);
+        message.message = JSON.stringify(currentClient.messages[message.room]);
+        socket.send(JSON.stringify(message));
       })
 
 
@@ -40,7 +48,7 @@ class Server{
         var message = {};
         message = JSON.parse(data);
         var newRoom = new clientmodule.Room(message.message);
-        this.roomList[newRoom.name] = this.mainRoom;
+        this.roomList[newRoom.name] = newRoom;
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(newRoom);
       })
