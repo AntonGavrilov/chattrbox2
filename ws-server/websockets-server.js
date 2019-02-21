@@ -39,23 +39,24 @@ class Server {
         var message = {};
         message = JSON.parse(data);
 
-        var lastSeenMsgDate = message.message;
         var currentClient = this.clients.get(socket);
 
+        var lastSeenMsgDate = currentClient.lastSeenMsgMap[message.room];
+
         var cachedMessages = currentClient.messages[message.room];
+
         var outputMessages = [];
 
-        if(cachedMessages)
-        {
-          cachedMessages.forEach((m) => {
-            if(m.timestamp > lastSeenMsgDate){
-              outputMessages.push(m);
+        if (cachedMessages) {
+          var outputMessages = cachedMessages.slice(0).reverse().filter((m) => {
+            if (m.timestamp > lastSeenMsgDate) {
+              m.isNewMessage = true;
+              return m;
             }
           })
         }
 
-
-        message.message = JSON.stringify(outputMessages);
+        message.message = JSON.stringify(outputMessages.reverse());
         socket.send(JSON.stringify(message));
       })
 
@@ -93,20 +94,12 @@ class Server {
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
 
-        var messagearr = [];
-
-        if (currentClient.messages[message.room] != undefined)
-          messagearr = currentClient.messages[message.room];
-
-        messagearr.push(message);
-        currentClient.messages[message.room] = messagearr;
-
-
         this.clients.forEach(function(user, socket, map) {
           var currentClient = this.clients.get(socket);
           if (user.roomList.includes(currentClient.currentRoom) &&
             socket.readyState === WebSocket.OPEN) {
             socket.send(data);
+            currentClient.pushMessageToCache(message);
           }
         }, this)
       })

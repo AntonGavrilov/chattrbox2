@@ -42,10 +42,27 @@ export class ChatForm {
 export class RoomList {
   constructor(list) {
     this.$list = $(list);
+
+    this.timer = setInterval(() => {
+      $(this.$list).each((idx, element) => {
+        let $element = $(element).children('.badge-pill');
+        this.messageUpdateMsgCountCallback(element);
+
+        /*
+        let timestamp = new Date().setTime($element.attr('data-time'));
+        let ago = moment(timestamp).fromNow();
+        $element.html(ago);
+        */
+      });
+    }, 1000);
   }
 
   registerRoomChangeHandler(roomChangeCallback){
     this.roomChangeCallback = roomChangeCallback;
+  }
+
+  registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback){
+    this.messageUpdateMsgCountCallback = messageUpdateMsgCountCallback;
   }
 
   updateMsgCountBadge(roomId, count){
@@ -79,7 +96,7 @@ export class RoomList {
 
     let $msgCountBadge = $('<span>', {
       'class': 'badge badge-primary badge-pill',
-      'text': 14
+      'text': ""
     })
 
     $messageRow.append($msgCountBadge)
