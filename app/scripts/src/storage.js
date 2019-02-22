@@ -19,6 +19,42 @@ export class UserStore extends Store {
   }
 }
 
+
+export class LastSeenMsgDateStore extends Store {
+  constructor(key) {
+    super(sessionStorage);
+    this.key = key;
+  }
+
+  get(room) {
+    var jsonDates = super.get(this.key);
+    var dates;
+    var date = 0;
+
+    if(jsonDates != null)  {
+      dates = JSON.parse(jsonDates);
+      if (room in dates)
+        date = dates[room];
+    }
+    return date;
+  }
+
+  set(newDate, room) {
+    var jsonDates = super.get(this.key);
+    var dates;
+
+    if (jsonDates == null) {
+      dates = {};
+    } else {
+      dates = JSON.parse(jsonDates);
+    }
+
+    dates[room] = newDate;
+
+    super.set(JSON.stringify(dates))
+  }
+}
+
 export class MessageStore extends Store {
   constructor(key) {
     super(sessionStorage);

@@ -42,10 +42,18 @@ export class ChatForm {
 export class RoomList {
   constructor(list) {
     this.$list = $(list);
+
+    this.timer = setTimeout(() => {
+        this.messageUpdateMsgCountCallback();
+    }, 8000);
   }
 
   registerRoomChangeHandler(roomChangeCallback){
     this.roomChangeCallback = roomChangeCallback;
+  }
+
+  registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback){
+    this.messageUpdateMsgCountCallback = messageUpdateMsgCountCallback;
   }
 
   updateMsgCountBadge(roomId, count){
@@ -66,6 +74,15 @@ export class RoomList {
     })
   }
 
+  updateNewMsgCount(roomListMsgCount){
+    roomListMsgCount.forEach(r => {
+      var msgCountBadge = this.$list.find('[roomid="' + r + '"]').children('.badge-pill');
+      let currentValue = parseInt(msgCountBadge[0].textContent) + 1;
+      msgCountBadge[0].textContent = currentValue;
+
+    })
+  }
+
   drawRoom(room, currentRoom) {
     let $messageRow = $('<li>', {
       'class': 'list-group-item d-flex room-row',
@@ -79,7 +96,7 @@ export class RoomList {
 
     let $msgCountBadge = $('<span>', {
       'class': 'badge badge-primary badge-pill',
-      'text': 14
+      'text': ""
     })
 
     $messageRow.append($msgCountBadge)

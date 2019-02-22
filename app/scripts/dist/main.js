@@ -26,7 +26,7 @@ var currentRoom = 'main';
 
 var userStore = new _storage.UserStore('x-chattrbox/u');
 var messageStore = new _storage.MessageStore('x-chattrbox/m');
-var lastSeenMsgDateStore = new _storage.MessageStore('x-chattrbox/lastseenmsg');
+var lastSeenMsgDateStore = new _storage.LastSeenMsgDateStore('x-chattrbox/lastseenmsg');
 var username = userStore.get();
 
 if (!username) {
@@ -45,13 +45,19 @@ var ChatApp = function () {
     this.chatList = new _dom.ChatList(LIST_SELECTOR, username);
     this.roomList = new _dom.RoomList(ROOMLIST_SELECTOR);
 
+    this.roomList.registerMessageUpdateMsgCountHandler(function (element) {
+      var messageListMessage = new ChatMessage("");
+      messageListMessage.messageType = "RoomNewMessageCount";
+      _wsClient.ret.sendMessage(messageListMessage.serialize());
+    });
+
     var messages = messageStore.get(currentRoom);
 
     for (var i = 0; i < messages.length; i++) {
       var message = new ChatMessage(messages[i], "message");
       message.isNewMessage = false;
       this.chatList.drawMessage(message.serialize());
-      lastSeenMsgDateStore.set(message.timestamp, room);
+      lastSeenMsgDateStore.set(message.timestamp, currentRoom);
     }
 
     _wsClient.ret.registerOpenHandler(function () {
@@ -77,39 +83,50 @@ var ChatApp = function () {
           _this.chatList.drawMessage(message.serialize());
           message.readMessage();
           lastSeenMsgDateStore.set(message.timestamp, currentRoom);
+          messageStore.set(message, message.room);
+          console.log(message.timestamp);
         }
-        messageStore.set(message, message.room);
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         _this.roomList.drawRoomList(rooms, currentRoom);
+      } else if (message.messageType == "RoomNewMessageCount") {
+        var roomsnewmessage = JSON.parse(message.message);
+        _this.roomList.drawRoomList(roomsnewmessage);
       } else if (message.messageType == "messageList") {
         var massgeList = JSON.parse(message.message);
 
-        massgeList.forEach(function (m) {
-          messages.set(m, message.room);
-        });
-
         var messages = messageStore.get(currentRoom);
 
-        for (var i = 0; i < messages.length; i++) {
-          var _message = new ChatMessage(messages[i], "message");
-          _this.chatList.drawMessage(_message.serialize());
-        }
+        messages.forEach(function (m) {
+          var message = new ChatMessage(m, "message");
+          message.readMessage();
+          _this.chatList.drawMessage(message.serialize());
+        });
+
+        massgeList.forEach(function (m) {
+          var message = new ChatMessage(m, "message");
+          _this.chatList.drawMessage(message.serialize());
+          message.readMessage();
+          messageStore.set(m, message.room);
+          lastSeenMsgDateStore.set(message.timestamp, currentRoom);
+        }, _this);
       }
     });
 
     this.chatFrom.registerNewRoomHandler(function () {
       var room = prompt('Enter a room name');
-      _this.chatList.clearChatList();
-      currentRoom = room;
-      var newRoomMessage = new ChatMessage("");
-      newRoomMessage.messageType = "newRoom";
-      newRoomMessage.message = currentRoom;
-      _wsClient.ret.sendMessage(newRoomMessage.serialize());
+      if (room) {
+        _this.chatList.clearChatList();
+        currentRoom = room;
+        var newRoomMessage = new ChatMessage("");
+        newRoomMessage.messageType = "newRoom";
+        newRoomMessage.message = currentRoom;
+        _wsClient.ret.sendMessage(newRoomMessage.serialize());
 
-      var roomListMessage = new ChatMessage("");
-      roomListMessage.messageType = "roomList";
-      _wsClient.ret.sendMessage(roomListMessage.serialize());
+        var roomListMessage = new ChatMessage("");
+        roomListMessage.messageType = "roomList";
+        _wsClient.ret.sendMessage(roomListMessage.serialize());
+      }
     });
 
     this.chatFrom.registerJoinRoomHandler(function () {
@@ -126,28 +143,23 @@ var ChatApp = function () {
     });
 
     this.roomList.registerRoomChangeHandler(function (newRoom) {
-      _this.chatList.clearChatList();
-      currentRoom = newRoom;
 
-      var roomListMessage = new ChatMessage("");
-      roomListMessage.messageType = "roomList";
-      _wsClient.ret.sendMessage(roomListMessage.serialize());
+      if (currentRoom != newRoom) {
+        _this.chatList.clearChatList();
+        currentRoom = newRoom;
 
-      var messageListMessage = new ChatMessage("");
-      messageListMessage.messageType = "messageList";
+        var roomListMessage = new ChatMessage("");
+        roomListMessage.messageType = "roomList";
+        _wsClient.ret.sendMessage(roomListMessage.serialize());
 
-      var _lastSeenMsgDateStore = lastSeenMsgDateStore.get(currentRoom),
-          _lastSeenMsgDateStore2 = _slicedToArray(_lastSeenMsgDateStore, 1),
-          lastSeenMsgDate = _lastSeenMsgDateStore2[0];
+        var lastSeenMsgDate = lastSeenMsgDateStore.get(currentRoom);
 
-      messageListMessage.message = lastSeenMsgDate;
-      _wsClient.ret.sendMessage(messageListMessage.serialize());
-
-      var messages = messageStore.get(currentRoom);
-
-      for (var i = 0; i < messages.length; i++) {
-        var _message2 = new ChatMessage(messages[i], "message");
-        _this.chatList.drawMessage(_message2.serialize());
+        if (lastSeenMsgDate) {
+          var messageListMessage = new ChatMessage("");
+          messageListMessage.messageType = "messageList";
+          messageListMessage.message = lastSeenMsgDate;
+          _wsClient.ret.sendMessage(messageListMessage.serialize());
+        }
       }
     });
 
@@ -173,7 +185,9 @@ var ChatApp = function () {
 
 var ChatMessage = function () {
   function ChatMessage(_ref) {
-    var m = _ref.message,
+    var _ref$id = _ref.id,
+        id = _ref$id === undefined ? '_' + Math.random().toString(36).substr(2, 9) : _ref$id,
+        m = _ref.message,
         mt = _ref.messageType,
         _ref$user = _ref.user,
         u = _ref$user === undefined ? username : _ref$user,
@@ -181,14 +195,17 @@ var ChatMessage = function () {
         r = _ref$room === undefined ? currentRoom : _ref$room,
         _ref$timestamp = _ref.timestamp,
         t = _ref$timestamp === undefined ? new Date().getTime() : _ref$timestamp,
-        isnew = _ref.isNewMessage;
+        isnew = _ref.isNewMessage,
+        _ref$lastSeenMsgDate = _ref.lastSeenMsgDate,
+        lastSeenMsgDate = _ref$lastSeenMsgDate === undefined ? lastSeenMsgDateStore.get(currentRoom) : _ref$lastSeenMsgDate;
 
     _classCallCheck(this, ChatMessage);
 
+    this.id = id;
     this.message = m;
     this.user = u;
     this.timestamp = t;
-    this.room = r, this.messageType = mt, this.isNewMessage = isnew;
+    this.room = r, this.messageType = mt, this.isNewMessage = isnew, this.lastSeenMsgDate = lastSeenMsgDate;
   }
 
   _createClass(ChatMessage, [{
@@ -200,12 +217,14 @@ var ChatMessage = function () {
     key: 'serialize',
     value: function serialize() {
       return {
+        id: this.id,
         user: this.user,
         message: this.message,
         room: this.room,
         timestamp: this.timestamp,
         isNewMessage: this.isNewMessage,
-        messageType: this.messageType
+        messageType: this.messageType,
+        lastSeenMsgDate: this.lastSeenMsgDate
       };
     }
   }]);
@@ -297,15 +316,26 @@ var ChatForm = exports.ChatForm = function () {
 
 var RoomList = exports.RoomList = function () {
   function RoomList(list) {
+    var _this2 = this;
+
     _classCallCheck(this, RoomList);
 
     this.$list = (0, _jquery2.default)(list);
+
+    this.timer = setTimeout(function () {
+      _this2.messageUpdateMsgCountCallback();
+    }, 8000);
   }
 
   _createClass(RoomList, [{
     key: 'registerRoomChangeHandler',
     value: function registerRoomChangeHandler(roomChangeCallback) {
       this.roomChangeCallback = roomChangeCallback;
+    }
+  }, {
+    key: 'registerMessageUpdateMsgCountHandler',
+    value: function registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback) {
+      this.messageUpdateMsgCountCallback = messageUpdateMsgCountCallback;
     }
   }, {
     key: 'updateMsgCountBadge',
@@ -317,7 +347,7 @@ var RoomList = exports.RoomList = function () {
   }, {
     key: 'drawRoomList',
     value: function drawRoomList(roomList, currentRoom) {
-      var _this2 = this;
+      var _this3 = this;
 
       var b = 1;
 
@@ -326,13 +356,24 @@ var RoomList = exports.RoomList = function () {
       });
 
       roomList.forEach(function (room, i, arr) {
-        _this2.drawRoom(room, currentRoom);
+        _this3.drawRoom(room, currentRoom);
+      });
+    }
+  }, {
+    key: 'updateNewMsgCount',
+    value: function updateNewMsgCount(roomListMsgCount) {
+      var _this4 = this;
+
+      roomListMsgCount.forEach(function (r) {
+        var msgCountBadge = _this4.$list.find('[roomid="' + r + '"]').children('.badge-pill');
+        var currentValue = parseInt(msgCountBadge[0].textContent) + 1;
+        msgCountBadge[0].textContent = currentValue;
       });
     }
   }, {
     key: 'drawRoom',
     value: function drawRoom(room, currentRoom) {
-      var _this3 = this;
+      var _this5 = this;
 
       var $messageRow = (0, _jquery2.default)('<li>', {
         'class': 'list-group-item d-flex room-row',
@@ -346,14 +387,14 @@ var RoomList = exports.RoomList = function () {
 
       var $msgCountBadge = (0, _jquery2.default)('<span>', {
         'class': 'badge badge-primary badge-pill',
-        'text': 14
+        'text': ""
       });
 
       $messageRow.append($msgCountBadge);
 
       $messageRow.on('click', function (event) {
         var curRoom = (0, _jquery2.default)(event.target).attr('roomid');
-        _this3.roomChangeCallback(curRoom);
+        _this5.roomChangeCallback(curRoom);
         (0, _jquery2.default)('.room-row.active').removeClass("active");
         (0, _jquery2.default)(event.target).addClass('active');
       });
@@ -510,16 +551,62 @@ var UserStore = exports.UserStore = function (_Store) {
   return UserStore;
 }(Store);
 
-var MessageStore = exports.MessageStore = function (_Store2) {
-  _inherits(MessageStore, _Store2);
+var LastSeenMsgDateStore = exports.LastSeenMsgDateStore = function (_Store2) {
+  _inherits(LastSeenMsgDateStore, _Store2);
+
+  function LastSeenMsgDateStore(key) {
+    _classCallCheck(this, LastSeenMsgDateStore);
+
+    var _this2 = _possibleConstructorReturn(this, (LastSeenMsgDateStore.__proto__ || Object.getPrototypeOf(LastSeenMsgDateStore)).call(this, sessionStorage));
+
+    _this2.key = key;
+    return _this2;
+  }
+
+  _createClass(LastSeenMsgDateStore, [{
+    key: "get",
+    value: function get(room) {
+      var jsonDates = _get(LastSeenMsgDateStore.prototype.__proto__ || Object.getPrototypeOf(LastSeenMsgDateStore.prototype), "get", this).call(this, this.key);
+      var dates;
+      var date = 0;
+
+      if (jsonDates != null) {
+        dates = JSON.parse(jsonDates);
+        if (room in dates) date = dates[room];
+      }
+      return date;
+    }
+  }, {
+    key: "set",
+    value: function set(newDate, room) {
+      var jsonDates = _get(LastSeenMsgDateStore.prototype.__proto__ || Object.getPrototypeOf(LastSeenMsgDateStore.prototype), "get", this).call(this, this.key);
+      var dates;
+
+      if (jsonDates == null) {
+        dates = {};
+      } else {
+        dates = JSON.parse(jsonDates);
+      }
+
+      dates[room] = newDate;
+
+      _get(LastSeenMsgDateStore.prototype.__proto__ || Object.getPrototypeOf(LastSeenMsgDateStore.prototype), "set", this).call(this, JSON.stringify(dates));
+    }
+  }]);
+
+  return LastSeenMsgDateStore;
+}(Store);
+
+var MessageStore = exports.MessageStore = function (_Store3) {
+  _inherits(MessageStore, _Store3);
 
   function MessageStore(key) {
     _classCallCheck(this, MessageStore);
 
-    var _this2 = _possibleConstructorReturn(this, (MessageStore.__proto__ || Object.getPrototypeOf(MessageStore)).call(this, sessionStorage));
+    var _this3 = _possibleConstructorReturn(this, (MessageStore.__proto__ || Object.getPrototypeOf(MessageStore)).call(this, sessionStorage));
 
-    _this2.key = key;
-    return _this2;
+    _this3.key = key;
+    return _this3;
   }
 
   _createClass(MessageStore, [{

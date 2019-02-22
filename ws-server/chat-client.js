@@ -6,6 +6,7 @@ class ChatClient{
     this.roomList = [];
     this.emmiter = new EventClientEmmiter();
     this.currentRoom = {};
+    this.lastSeenMsgMap = {};
     this.messages = {};
   }
 
@@ -18,8 +19,9 @@ class ChatClient{
       this.emmiter.emit(message.messageType, socketmessage.data)
 
       console.log('message received: ' + socketmessage.data);
+      this.lastSeenMsgMap[message.room] = message.lastSeenMsgDate;
 
-    };
+    }
   }
 
   on(eventName, fn) {
@@ -34,6 +36,17 @@ class ChatClient{
 
   changeCurrentRoom(room) {
     this.currentRoom = room
+  }
+
+  pushMessageToCache(message){
+    var messagearr = [];
+
+    if (this.messages[message.room] != undefined)
+      messagearr = this.messages[message.room];
+
+    messagearr.push(message);
+    this.messages[message.room] = messagearr;
+
   }
 }
 
