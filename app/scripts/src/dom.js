@@ -43,9 +43,10 @@ export class RoomList {
   constructor(list) {
     this.$list = $(list);
 
-    this.timer = setTimeout(() => {
+    this.timer = setInterval(() => {
         this.messageUpdateMsgCountCallback();
-    }, 8000);
+    }, 3000);
+    
   }
 
   registerRoomChangeHandler(roomChangeCallback){
@@ -54,12 +55,6 @@ export class RoomList {
 
   registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback){
     this.messageUpdateMsgCountCallback = messageUpdateMsgCountCallback;
-  }
-
-  updateMsgCountBadge(roomId, count){
-    var msgCountBadge = this.$list.find('[roomid="' + roomId + '"]').children('.badge-pill');
-    let currentValue = parseInt(msgCountBadge[0].textContent) + 1;
-    msgCountBadge[0].textContent = currentValue;
   }
 
   drawRoomList(roomList, currentRoom) {
@@ -75,12 +70,10 @@ export class RoomList {
   }
 
   updateNewMsgCount(roomListMsgCount){
-    roomListMsgCount.forEach(r => {
+    Object.keys(roomListMsgCount).forEach(r => {
       var msgCountBadge = this.$list.find('[roomid="' + r + '"]').children('.badge-pill');
-      let currentValue = parseInt(msgCountBadge[0].textContent) + 1;
-      msgCountBadge[0].textContent = currentValue;
-
-    })
+      msgCountBadge[0].textContent = (roomListMsgCount[r] == 0) ? "" : roomListMsgCount[r] ;
+    },this)
   }
 
   drawRoom(room, currentRoom) {

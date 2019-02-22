@@ -15,12 +15,11 @@ class ChatClient{
 
       var message = {};
       message = JSON.parse(socketmessage.data);
+      this.lastSeenMsgMap[message.room] = message.lastSeenMsgDate;
       handlerFunction(message);
       this.emmiter.emit(message.messageType, socketmessage.data)
 
       console.log('message received: ' + socketmessage.data);
-      this.lastSeenMsgMap[message.room] = message.lastSeenMsgDate;
-
     }
   }
 

@@ -32,7 +32,6 @@ class Server {
         var room = this.roomList[message.message];
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(room);
-        room.addClient(currentClient);
       })
 
       newclient.on("RoomNewMessageCount", (data) => {
@@ -42,10 +41,10 @@ class Server {
         var currentClient = this.clients.get(socket);
 
         var outputarr = [];
+        var initalObj = {};
 
         Object.keys(currentClient.messages).forEach(room => {
           var messagearr = currentClient.messages[room];
-          var initalObj = {};
           initalObj[room] = 0;
 
           var output = messagearr.slice(0).reverse().reduce((output, m, index, arr) => {
@@ -56,9 +55,9 @@ class Server {
             },
             initalObj
           )
-          outputarr.push(output);
         }, this)
-        return JSON.stringify(outputarr)
+        message.message = JSON.stringify(initalObj);
+        socket.send(JSON.stringify(message));
       })
 
 
@@ -122,12 +121,11 @@ class Server {
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
 
-        this.clients.forEach(function(user, socket, map) {
-          var currentClient = this.clients.get(socket);
-          if (user.roomList.includes(currentClient.currentRoom) &&
+        this.clients.forEach(function(client, socket, map) {
+          if (client.roomList.includes(currentRoom) &&
             socket.readyState === WebSocket.OPEN) {
             socket.send(data);
-            currentClient.pushMessageToCache(message);
+            client.pushMessageToCache(message);
           }
         }, this)
       })
