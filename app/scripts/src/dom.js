@@ -43,18 +43,9 @@ export class RoomList {
   constructor(list) {
     this.$list = $(list);
 
-    this.timer = setInterval(() => {
-      $(this.$list).each((idx, element) => {
-        let $element = $(element).children('.badge-pill');
-        this.messageUpdateMsgCountCallback(element);
-
-        /*
-        let timestamp = new Date().setTime($element.attr('data-time'));
-        let ago = moment(timestamp).fromNow();
-        $element.html(ago);
-        */
-      });
-    }, 1000);
+    this.timer = setTimeout(() => {
+        this.messageUpdateMsgCountCallback();
+    }, 8000);
   }
 
   registerRoomChangeHandler(roomChangeCallback){
@@ -80,6 +71,15 @@ export class RoomList {
 
     roomList.forEach((room, i, arr) => {
       this.drawRoom(room, currentRoom);
+    })
+  }
+
+  updateNewMsgCount(roomListMsgCount){
+    roomListMsgCount.forEach(r => {
+      var msgCountBadge = this.$list.find('[roomid="' + r + '"]').children('.badge-pill');
+      let currentValue = parseInt(msgCountBadge[0].textContent) + 1;
+      msgCountBadge[0].textContent = currentValue;
+
     })
   }
 

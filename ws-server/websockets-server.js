@@ -35,6 +35,34 @@ class Server {
         room.addClient(currentClient);
       })
 
+      newclient.on("RoomNewMessageCount", (data) => {
+        var message = {};
+        message = JSON.parse(data);
+
+        var currentClient = this.clients.get(socket);
+
+        var outputarr = [];
+
+        Object.keys(currentClient.messages).forEach(room => {
+          var messagearr = currentClient.messages[room];
+          var initalObj = {};
+          initalObj[room] = 0;
+
+          var output = messagearr.slice(0).reverse().reduce((output, m, index, arr) => {
+              if (m.timestamp > currentClient.lastSeenMsgMap[room])
+                output[room] =  output[room] + 1;
+              return output;
+
+            },
+            initalObj
+          )
+          outputarr.push(output);
+        }, this)
+        return JSON.stringify(outputarr)
+      })
+
+
+
       newclient.on("messageList", (data) => {
         var message = {};
         message = JSON.parse(data);

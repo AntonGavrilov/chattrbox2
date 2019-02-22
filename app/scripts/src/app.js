@@ -35,13 +35,10 @@ class ChatApp {
     this.chatList = new ChatList(LIST_SELECTOR, username);
     this.roomList = new RoomList(ROOMLIST_SELECTOR);
 
-    this.roomList.registerMessageUpdateMsgCountHandler((element) =>{
-      if(lastSeenMsgDate){
+    this.roomList.registerMessageUpdateMsgCountHandler((element) => {
         var messageListMessage = new ChatMessage("");
         messageListMessage.messageType = "RoomNewMessageCount";
-        messageListMessage.message = lastSeenMsgDate;
         socket.sendMessage(messageListMessage.serialize());
-      }
     })
 
     var messages = messageStore.get(currentRoom);
@@ -84,14 +81,14 @@ class ChatApp {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
       } else if (message.messageType == "RoomNewMessageCount") {
-        var rooms = JSON.parse(message.message);
-        this.roomList.drawRoomList(rooms, currentRoom);
+        var roomsnewmessage = JSON.parse(message.message);
+        this.roomList.drawRoomList(roomsnewmessage);
       } else if (message.messageType == "messageList") {
         var massgeList = JSON.parse(message.message);
 
         var messages = messageStore.get(currentRoom);
 
-        messages.forEach((m) =>{
+        messages.forEach((m) => {
           let message = new ChatMessage(m, "message");
           message.readMessage();
           this.chatList.drawMessage(message.serialize());
@@ -109,7 +106,7 @@ class ChatApp {
 
     this.chatFrom.registerNewRoomHandler(() => {
       var room = prompt('Enter a room name');
-      if(room){
+      if (room) {
         this.chatList.clearChatList();
         currentRoom = room;
         var newRoomMessage = new ChatMessage("");
@@ -138,20 +135,24 @@ class ChatApp {
 
 
     this.roomList.registerRoomChangeHandler((newRoom) => {
-      this.chatList.clearChatList();
-      currentRoom = newRoom;
 
-      var roomListMessage = new ChatMessage("");
-      roomListMessage.messageType = "roomList";
-      socket.sendMessage(roomListMessage.serialize())
 
-      var lastSeenMsgDate = lastSeenMsgDateStore.get(currentRoom);
+      if (currentRoom != newRoom) {
+        this.chatList.clearChatList();
+        currentRoom = newRoom;
 
-      if(lastSeenMsgDate){
-        var messageListMessage = new ChatMessage("");
-        messageListMessage.messageType = "messageList";
-        messageListMessage.message = lastSeenMsgDate;
-        socket.sendMessage(messageListMessage.serialize());
+        var roomListMessage = new ChatMessage("");
+        roomListMessage.messageType = "roomList";
+        socket.sendMessage(roomListMessage.serialize())
+
+        var lastSeenMsgDate = lastSeenMsgDateStore.get(currentRoom);
+
+        if (lastSeenMsgDate) {
+          var messageListMessage = new ChatMessage("");
+          messageListMessage.messageType = "messageList";
+          messageListMessage.message = lastSeenMsgDate;
+          socket.sendMessage(messageListMessage.serialize());
+        }
       }
     })
 
