@@ -50,6 +50,8 @@ class ChatApp {
       lastSeenMsgDateStore.set(message.timestamp, currentRoom);
     }
 
+
+
     socket.registerOpenHandler(() => {
       this.chatFrom.init((data) => {
         let message = new ChatMessage({
@@ -80,6 +82,14 @@ class ChatApp {
       } else if (message.messageType == "roomList") {
         var rooms = JSON.parse(message.message);
         this.roomList.drawRoomList(rooms, currentRoom);
+      } else if (message.messageType == "joinRoom") {
+        var newRoom = message.message;
+        currentRoom = newRoom;
+        this.roomList.drawRoom(newRoom, currentRoom);
+      } else if (message.messageType == "newRoom") {
+        var newRoom = message.message;
+        currentRoom = newRoom;
+        this.roomList.drawRoom(newRoom, currentRoom);
       } else if (message.messageType == "RoomNewMessageCount") {
         var roomsnewmessage = JSON.parse(message.message);
         this.roomList.updateNewMsgCount(roomsnewmessage);
@@ -108,15 +118,10 @@ class ChatApp {
       var room = prompt('Enter a room name');
       if (room) {
         this.chatList.clearChatList();
-        currentRoom = room;
         var newRoomMessage = new ChatMessage("");
         newRoomMessage.messageType = "newRoom";
-        newRoomMessage.message = currentRoom;
+        newRoomMessage.message = room;
         socket.sendMessage(newRoomMessage.serialize())
-
-        var roomListMessage = new ChatMessage("");
-        roomListMessage.messageType = "roomList";
-        socket.sendMessage(roomListMessage.serialize())
       }
     })
 
@@ -127,22 +132,13 @@ class ChatApp {
       newRoomMessage.messageType = "joinRoom";
       newRoomMessage.message = room;
       socket.sendMessage(newRoomMessage.serialize())
-      currentRoom = room;
-      var roomListMessage = new ChatMessage("");
-      roomListMessage.messageType = "roomList";
-      socket.sendMessage(roomListMessage.serialize())
     })
 
 
     this.roomList.registerRoomChangeHandler((newRoom) => {
       if (currentRoom != newRoom) {
-        this.chatList.clearChatList();
         currentRoom = newRoom;
-
-        var roomListMessage = new ChatMessage("");
-        roomListMessage.messageType = "roomList";
-        socket.sendMessage(roomListMessage.serialize())
-
+        this.chatList.clearChatList();
         var messageListMessage = new ChatMessage("");
         messageListMessage.messageType = "messageList";
         socket.sendMessage(messageListMessage.serialize());

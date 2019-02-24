@@ -33,7 +33,9 @@ function close(){
 }
 
 function sendMessage(payload){
-  socket.send(JSON.stringify(payload));
+  socket.send(JSON.stringify(payload), function(err){
+    
+  });
 }
 
 function getState(){

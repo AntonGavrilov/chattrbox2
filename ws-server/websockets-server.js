@@ -32,6 +32,8 @@ class Server {
         var room = this.roomList[message.message];
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(room);
+        message.message = message.message;
+        socket.send(JSON.stringify(message));
       })
 
       newclient.on("RoomNewMessageCount", (data) => {
@@ -95,6 +97,8 @@ class Server {
         this.roomList[newRoom.name] = newRoom;
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(newRoom);
+        message.message = newRoom.name;
+        socket.send(JSON.stringify(message));
       })
 
 
@@ -109,6 +113,7 @@ class Server {
         socket.send(JSON.stringify(message));
       })
 
+
       newclient.on("message", (data) => {
 
         var message = {};
@@ -121,11 +126,12 @@ class Server {
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
 
-        this.clients.forEach(function(client, socket, map) {
-          if (client.roomList.includes(currentRoom) &&
+        this.clients.forEach(function(user, socket, map) {
+          var currentClient = this.clients.get(socket);
+          if (user.roomList.includes(currentClient.currentRoom) &&
             socket.readyState === WebSocket.OPEN) {
             socket.send(data);
-            client.pushMessageToCache(message);
+            currentClient.pushMessageToCache(message);
           }
         }, this)
       })

@@ -46,7 +46,7 @@ export class RoomList {
     this.timer = setInterval(() => {
         this.messageUpdateMsgCountCallback();
     }, 3000);
-    
+
   }
 
   registerRoomChangeHandler(roomChangeCallback){
@@ -69,11 +69,24 @@ export class RoomList {
     })
   }
 
+  addRoom(roomName, currentRoom){
+
+  }
+
   updateNewMsgCount(roomListMsgCount){
     Object.keys(roomListMsgCount).forEach(r => {
       var msgCountBadge = this.$list.find('[roomid="' + r + '"]').children('.badge-pill');
       msgCountBadge[0].textContent = (roomListMsgCount[r] == 0) ? "" : roomListMsgCount[r] ;
     },this)
+  }
+
+  setCurrentRoom($currentRoom){
+
+    $(".room-row").each(function(index) {
+      $(this).removeClass('active');
+    });
+
+    $currentRoom.addClass('active');
   }
 
   drawRoom(room, currentRoom) {
@@ -83,9 +96,7 @@ export class RoomList {
       'text': room
     })
 
-    if(currentRoom == room){
-      $messageRow.addClass('active');
-    }
+    this.setCurrentRoom($messageRow);
 
     let $msgCountBadge = $('<span>', {
       'class': 'badge badge-primary badge-pill',
