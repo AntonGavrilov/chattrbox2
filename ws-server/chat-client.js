@@ -15,12 +15,19 @@ class ChatClient{
 
       var message = {};
       message = JSON.parse(socketmessage.data);
-      this.lastSeenMsgMap[message.room] = message.lastSeenMsgDate;
       handlerFunction(message);
       this.emmiter.emit(message.messageType, socketmessage.data)
 
       console.log('message received: ' + socketmessage.data);
     }
+  }
+
+  readMessage(id, room){
+    var cachedMessage = this.getCachedMessageById(id, room);
+    cachedMessage.isNewMessage = false;
+    this.lastSeenMsgMap[cachedMessage.room] = cachedMessage.id;
+
+    return cachedMessage;
   }
 
   on(eventName, fn) {
@@ -45,7 +52,36 @@ class ChatClient{
 
     messagearr.push(message);
     this.messages[message.room] = messagearr;
+  }
 
+  updateMessageInCache(message){
+    var messagearr = [];
+
+    if (this.messages[message.room] != undefined)
+      messagearr = this.messages[message.room];
+
+    var updatedMessage = messagearr.splice(messagearr.indexOf(message), 1, message);
+
+  }
+
+
+  getCachedMessageById(messageId, roomId){
+    var messagearr = [];
+
+    if (this.messages[roomId] != undefined)
+      messagearr = this.messages[roomId];
+
+    var result = messagearr.slice(0).filter(m=>{
+      if (m.id == messageId) {
+        return m;
+    }
+  })
+
+    if(result.length > 0){
+      return result[0];
+    }else{
+      return null;
+    }
   }
 }
 

@@ -74,9 +74,15 @@ class ChatApp {
       if (message.messageType == "message") {
         if (message.room == currentRoom) {
           this.chatList.drawMessage(message.serialize());
-          message.readMessage();
-          lastSeenMsgDateStore.set(message.timestamp, currentRoom);
-          messageStore.set(message, message.room);
+          lastSeenMsgDateStore.set(message.id, currentRoom);
+          let readMessage = new ChatMessage({
+            message: message.id,
+            messageType: "readMessage",
+            isNewMessage: true
+          });
+
+          socket.sendMessage(readMessage.serialize())
+
           console.log(message.timestamp);
         }
       } else if (message.messageType == "roomList") {
@@ -98,17 +104,9 @@ class ChatApp {
 
         var messages = messageStore.get(currentRoom);
 
-        messages.forEach((m) => {
-          let message = new ChatMessage(m, "message");
-          message.readMessage();
-          this.chatList.drawMessage(message.serialize());
-        })
-
         massgeList.forEach((m) => {
           let message = new ChatMessage(m, "message");
           this.chatList.drawMessage(message.serialize());
-          message.readMessage();
-          messageStore.set(m, message.room);
           lastSeenMsgDateStore.set(message.timestamp, currentRoom);
         }, this)
       }

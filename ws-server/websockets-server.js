@@ -63,6 +63,19 @@ class Server {
       })
 
 
+      newclient.on("readMessage", (data) => {
+        var message = {};
+        message = JSON.parse(data);
+
+        var currentClient = this.clients.get(socket);
+
+        var messageId = message.message;
+
+        var cachedMessage = currentClient.readMessage(messageId, message.room);
+        message.message = JSON.stringify(cachedMessage);
+        socket.send(JSON.stringify(message));
+      })
+
 
       newclient.on("messageList", (data) => {
         var message = {};
@@ -70,19 +83,18 @@ class Server {
 
         var currentClient = this.clients.get(socket);
 
-        var lastSeenMsgDate = currentClient.lastSeenMsgMap[message.room];
+        var lastSeenMsg = currentClient.lastSeenMsgMap[message.room];
 
         var cachedMessages = currentClient.messages[message.room];
 
+        var lstReadMsg = currentClient.getCachedMessageById(lastSeenMsg, message.room);
+
         var outputMessages = [];
 
-        if (cachedMessages) {
-          var outputMessages = cachedMessages.slice(0).reverse().filter((m) => {
-            if (m.timestamp > lastSeenMsgDate) {
-              m.isNewMessage = true;
-              return m;
-            }
-          })
+        if(lstReadMsg){
+          if (cachedMessages) {
+            var outputMessages = cachedMessages.reverse().slice(0, 30);
+          }
         }
 
         message.message = JSON.stringify(outputMessages.reverse());
@@ -130,8 +142,8 @@ class Server {
           var currentClient = this.clients.get(socket);
           if (user.roomList.includes(currentClient.currentRoom) &&
             socket.readyState === WebSocket.OPEN) {
-            socket.send(data);
             currentClient.pushMessageToCache(message);
+            socket.send(data);
           }
         }, this)
       })
