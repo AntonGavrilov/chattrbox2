@@ -42,11 +42,10 @@ export class ChatForm {
 export class RoomList {
   constructor(list) {
     this.$list = $(list);
-/*
+
     this.timer = setInterval(() => {
         this.messageUpdateMsgCountCallback();
-    }, 1000);
-*/
+    }, 3000);
   }
 
   registerRoomChangeHandler(roomChangeCallback){

@@ -49,11 +49,10 @@ class Server {
           var messagearr = currentClient.messages[room];
           initalObj[room] = 0;
 
-          var output = messagearr.slice(0).reverse().reduce((output, m, index, arr) => {
-              if (m.timestamp > currentClient.lastSeenMsgMap[room])
-                output[room] =  output[room] + 1;
+          var output = messagearr.reduce((output, m, index, arr) => {
+              if (m.isNewMessage)
+                output[room] = output[room] + 1;
               return output;
-
             },
             initalObj
           )
@@ -91,14 +90,14 @@ class Server {
 
         var outputMessages = [];
 
-        if(lstReadMsg){
-          if (cachedMessages) {
-            var outputMessages = cachedMessages.reverse().slice(0, 30);
-          }
+        if (cachedMessages) {
+          var outputMessages = cachedMessages.slice(-20);
         }
 
-        message.message = JSON.stringify(outputMessages.reverse());
-        socket.send(JSON.stringify(message));
+
+        outputMessages.forEach(m => {
+          socket.send(JSON.stringify(m));
+        })
       })
 
 
@@ -142,7 +141,8 @@ class Server {
           var currentClient = this.clients.get(socket);
           if (user.roomList.includes(currentClient.currentRoom) &&
             socket.readyState === WebSocket.OPEN) {
-            currentClient.pushMessageToCache(message);
+            var m = Object.assign({}, message);
+            currentClient.pushMessageToCache(m);
             socket.send(data);
           }
         }, this)
