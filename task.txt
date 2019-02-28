@@ -1,0 +1,30 @@
+  <script type="text/javascript" charset="utf-8">
+    /*
+                  var avatar = $('#avatar').clone();
+                  $('#avatar').remove();
+                  $('.inner').append(avatar);
+                  */
+    var deleted = false;
+
+    $(window).scroll(function() {
+      //alert($(window).scrollTop())
+      //alert($('#avatar').innerHeight())
+
+      var endOfavatar = $('#avatar').position().top + $('#avatar').innerHeight();
+      if (!deleted) {
+        if ($(window).scrollTop() > endOfavatar) {
+          var avatar = $('#avatar').clone();
+          $('#avatar').remove();
+          $('.inner').append(avatar);
+          deleted = true;
+        }
+      }
+      
+      if(deleted){
+        $("#avatar").parent().css({position: 'relative'});
+        $("#avatar").offset({top: $(window).scrollTop(), position:'absolute'});
+        //alert($("#avatar"))
+      }
+
+    })
+  </script>

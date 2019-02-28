@@ -6,7 +6,7 @@ var port = 3002;
 
 class Server {
   constructor(port) {
-    this.messages = new Map();
+    this.messages = {};
     this.clients = new Map();
     this.roomList = {};
     this.mainRoom = new clientmodule.Room("main");
@@ -19,11 +19,9 @@ class Server {
       var newclient = new clientmodule.ChatClient(socket);
 
       newclient.registerMessageHandler((message) => {
-        if (message.messageType == "message")
-          this.messages.set(this.currentRoom, message);
+
       })
 
-      newclient.joinRoom(this.mainRoom);
       this.clients.set(socket, newclient);
 
       newclient.on("joinRoom", (data) => {
@@ -32,6 +30,19 @@ class Server {
         var room = this.roomList[message.message];
         var currentClient = this.clients.get(socket);
         currentClient.joinRoom(room);
+
+        //fill message history from current joined room
+        //+
+        var messageHistory = this.messages[message.room];
+
+        if (messageHistory) {
+          messageHistory.forEach(m => {
+            currentClient.pushMessageToCache(m);
+          }, this)
+        }
+        //-
+
+
         message.message = message.message;
         socket.send(JSON.stringify(message));
       })
@@ -91,7 +102,10 @@ class Server {
         var outputMessages = [];
 
         if (cachedMessages) {
-          var outputMessages = cachedMessages.slice(-20);
+          var msgIndex = lstReadMsg == null ? 0 : cachedMessages.indexOf(lstReadMsg);
+          var startmsgindex = (msgIndex - 20) <= 0 ? 0 : msgIndex - 20;
+          var endmsgindex = msgIndex + 20
+          var outputMessages = cachedMessages.slice(startmsgindex, endmsgindex);
         }
 
 
@@ -133,6 +147,9 @@ class Server {
         var currentClient = this.clients.get(socket);
         var currentRoom = this.roomList[message.room];
 
+
+        this.pushMessageToCache(message);
+
         if (currentRoom != undefined &&
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
@@ -148,6 +165,16 @@ class Server {
         }, this)
       })
     })
+  }
+
+  pushMessageToCache(message){
+    var messagearr = [];
+
+    if (this.messages[message.room] != undefined)
+      messagearr = this.messages[message.room];
+
+    messagearr.push(message);
+    this.messages[message.room] = messagearr;
   }
 }
 

@@ -41,14 +41,6 @@ class ChatApp {
       socket.sendMessage(messageListMessage.serialize());
     })
 
-    var messages = messageStore.get(currentRoom);
-
-    for (var i = 0; i < messages.length; i++) {
-      let message = new ChatMessage(messages[i], "message");
-      message.isNewMessage = false;
-      this.chatList.drawMessage(message.serialize());
-      lastSeenMsgDateStore.set(message.timestamp, currentRoom);
-    }
 
 
 
@@ -61,6 +53,12 @@ class ChatApp {
         });
         socket.sendMessage(message.serialize());
       })
+
+      this.chatList.clearChatList();
+      var newRoomMessage = new ChatMessage("");
+      newRoomMessage.messageType = "joinRoom";
+      newRoomMessage.message = currentRoom;
+      socket.sendMessage(newRoomMessage.serialize())
 
       var roomListMessage = new ChatMessage("");
       roomListMessage.messageType = "roomList";
@@ -91,7 +89,17 @@ class ChatApp {
       } else if (message.messageType == "joinRoom") {
         var newRoom = message.message;
         currentRoom = newRoom;
+
         this.roomList.drawRoom(newRoom, currentRoom);
+
+        let messageListMessage = new ChatMessage({
+          message: message.id,
+          messageType: "messageList",
+          isNewMessage: true
+        });
+
+        socket.sendMessage(messageListMessage.serialize())
+
       } else if (message.messageType == "newRoom") {
         var newRoom = message.message;
         currentRoom = newRoom;

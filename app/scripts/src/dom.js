@@ -8,7 +8,7 @@ function createGravatarUrl(username) {
 }
 
 export function promptForUsername() {
-  let username = prompt('Ennter a username');
+  let username = prompt('Enter a username');
   return username.toLowerCase();
 }
 
@@ -119,6 +119,7 @@ export class ChatList {
   constructor(listSel, username) {
     this.$list = $(listSel);
     this.username = username;
+    this.$loadingRing = this.createLoadingRing();
     this.timer = setInterval(() => {
       $('[data-time]').each((idx, element) => {
         let $element = $(element);
@@ -127,6 +128,18 @@ export class ChatList {
         $element.html(ago);
       });
     }, 1000);
+  }
+
+  createLoadingRing(){
+    let ring = $('<div>',{
+      'class' : "lds-ring"
+    });
+
+    for (var i = 0; i < 4; i++) {
+      let div = $('<div>');
+      ring.append(div);
+    }
+    return ring;
   }
 
   init() {}
