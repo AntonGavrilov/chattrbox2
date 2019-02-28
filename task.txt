@@ -19,7 +19,7 @@
           deleted = true;
         }
       }
-      
+
       if(deleted){
         $("#avatar").parent().css({position: 'relative'});
         $("#avatar").offset({top: $(window).scrollTop(), position:'absolute'});
@@ -28,3 +28,4 @@
 
     })
   </script>
+  https://learn.javascript.ru/onscroll
