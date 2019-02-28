@@ -120,6 +120,7 @@ export class ChatList {
     this.$list = $(listSel);
     this.username = username;
     this.$loadingRing = this.createLoadingRing();
+    this.$lastAppendMsgRow = null;
     this.timer = setInterval(() => {
       $('[data-time]').each((idx, element) => {
         let $element = $(element);
@@ -128,6 +129,16 @@ export class ChatList {
         $element.html(ago);
       });
     }, 1000);
+
+    this.$list[0].scroll(()=>{
+      var listHeight = this.$list.innerHeight();
+
+      if(this.$lastAppendMsgRow.position().top + this.$lastAppendMsgRow.innerHeight() >= listHeight){
+        console.log("1");
+      }
+    })
+
+
   }
 
   createLoadingRing(){
@@ -142,7 +153,6 @@ export class ChatList {
     return ring;
   }
 
-  init() {}
 
   clearChatList(){
     $(".message-row").each(function(index) {
@@ -200,7 +210,7 @@ export class ChatList {
         $messageRow.removeClass('is-new-message');
       }, 2000);
     }
+    this.$lastAppendMsgRow = $messageRow;
     $messageRow.get(0).scrollIntoView();
-
   }
 }
