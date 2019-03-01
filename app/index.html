@@ -4,6 +4,8 @@
     <title>Chattrbox</title>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
     <link rel="stylesheet" href="/stylesheets/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+
   </head>
   <body class="container chat-wrapper">
 
@@ -35,7 +37,13 @@
         </div><!-- /input-group -->
       </form>
     </section>
-
+    <script type="text/javascript">
+    $(document).ready(function () {
+      $('.list-group.panel-default.chat-messages').scroll(function () {
+             console.log('asdasd');
+         });
+     });
+    </script>
     <script src="/scripts/dist/main.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
   </body>
