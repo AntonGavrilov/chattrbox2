@@ -104,15 +104,79 @@ class Server {
         if (cachedMessages) {
           var msgIndex = lstReadMsg == null ? 0 : cachedMessages.indexOf(lstReadMsg);
           var startmsgindex = (msgIndex - 20) <= 0 ? 0 : msgIndex - 20;
-          var endmsgindex = msgIndex + 20
+          var endmsgindex = Math.min(startmsgindex + 20, cachedMessages.length);
           var outputMessages = cachedMessages.slice(startmsgindex, endmsgindex);
         }
-
-
         outputMessages.forEach(m => {
           socket.send(JSON.stringify(m));
         })
       })
+
+
+
+      newclient.on("oldMessages", (data) => {
+
+        var message = {};
+        message = JSON.parse(data);
+
+        var currentClient = this.clients.get(socket);
+
+        var cachedMessages = currentClient.messages[message.room];
+
+        var firstClientMsg = currentClient.getCachedMessageById(message.message, message.room);
+
+        var firstClientMsgIndex = cachedMessages.indexOf(firstClientMsg);
+
+        var outputMessages = [];
+
+        var firstOldMsgIndex = firstClientMsgIndex - 1;
+
+        if(cachedMessages && (firstOldMsgIndex > 0))
+        {
+          var startmsgindex = Math.max(firstOldMsgIndex - 20, 0)
+          var endmsgindex = firstOldMsgIndex;
+          var outputMessages = cachedMessages.slice(startmsgindex, endmsgindex);
+        }
+
+        outputMessages.reverse();
+
+        outputMessages.forEach(m => {
+          m.append = false;
+          socket.send(JSON.stringify(m));
+        })
+      }
+    )
+    newclient.on("newMessages", (data) => {
+
+      var message = {};
+      message = JSON.parse(data);
+
+      var currentClient = this.clients.get(socket);
+
+      var cachedMessages = currentClient.messages[message.room];
+
+      var firstClientMsg = currentClient.getCachedMessageById(message.message, message.room);
+
+      var firstClientMsgIndex = cachedMessages.indexOf(firstClientMsg);
+
+      var outputMessages = [];
+
+      var firstLastMsgIndex = firstClientMsgIndex + 1;
+
+      if(cachedMessages && (firstLastMsgIndex < cachedMessages.length))
+      {
+        var startmsgindex = firstLastMsgIndex;
+        var endmsgindex = Math.min(firstLastMsgIndex + 20, cachedMessages.length);
+        var outputMessages = cachedMessages.slice(startmsgindex, endmsgindex);
+      }
+
+
+      outputMessages.forEach(m => {
+        m.append = true;
+        socket.send(JSON.stringify(m));
+      })
+    }
+  )
 
 
       newclient.on("newRoom", (data) => {

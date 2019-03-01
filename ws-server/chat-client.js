@@ -6,6 +6,8 @@ class ChatClient{
     this.roomList = [];
     this.emmiter = new EventClientEmmiter();
     this.currentRoom = {};
+    this.lastOutputMsgIndex = 0;
+    this.firstOutputMsgIndex = 0;
     this.lastSeenMsgMap = {};
     this.messages = {};
   }

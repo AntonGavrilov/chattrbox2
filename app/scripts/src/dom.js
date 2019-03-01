@@ -22,7 +22,7 @@ export class ChatForm {
     this.$form.submit((event) => {
       event.preventDefault();
       let val = this.$input.val();
-      if(val != '')
+      if (val != '')
         submitCallback(val);
       this.$input.val('');
     });
@@ -44,15 +44,15 @@ export class RoomList {
     this.$list = $(list);
 
     this.timer = setInterval(() => {
-        this.messageUpdateMsgCountCallback();
+      this.messageUpdateMsgCountCallback();
     }, 3000);
   }
 
-  registerRoomChangeHandler(roomChangeCallback){
+  registerRoomChangeHandler(roomChangeCallback) {
     this.roomChangeCallback = roomChangeCallback;
   }
 
-  registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback){
+  registerMessageUpdateMsgCountHandler(messageUpdateMsgCountCallback) {
     this.messageUpdateMsgCountCallback = messageUpdateMsgCountCallback;
   }
 
@@ -68,18 +68,18 @@ export class RoomList {
     })
   }
 
-  addRoom(roomName, currentRoom){
+  addRoom(roomName, currentRoom) {
 
   }
 
-  updateNewMsgCount(roomListMsgCount){
+  updateNewMsgCount(roomListMsgCount) {
     Object.keys(roomListMsgCount).forEach(r => {
       var msgCountBadge = this.$list.find('[roomid="' + r + '"]').children('.badge-pill');
-      msgCountBadge[0].textContent = (roomListMsgCount[r] == 0) ? "" : roomListMsgCount[r] ;
-    },this)
+      msgCountBadge[0].textContent = (roomListMsgCount[r] == 0) ? "" : roomListMsgCount[r];
+    }, this)
   }
 
-  setCurrentRoom($currentRoom){
+  setCurrentRoom($currentRoom) {
 
     $(".room-row").each(function(index) {
       $(this).removeClass('active');
@@ -118,6 +118,7 @@ export class RoomList {
 export class ChatList {
   constructor(listSel, username) {
     this.$list = $(listSel);
+    this.rowList = [];
     this.username = username;
     this.$loadingRing = this.createLoadingRing();
     this.$lastAppendMsgRow = null;
@@ -130,12 +131,42 @@ export class ChatList {
       });
     }, 1000);
 
+    $('.list-group.panel-default.chat-messages').scroll(() => {
+      var elements = document.getElementsByClassName('list-group panel-default chat-messages');
+      var messagePanel = elements[0];
 
+      var messagePanelHeigth = $('.list-group.panel-default.chat-messages').outerHeight();
+      var currentScroll =      $('.list-group.panel-default.chat-messages').scrollTop();
+
+
+      if(messagePanel.scrollTop == 0){
+        var msgList = $('[data-chat="message-list"]').children();
+        var firstrow = msgList[0];
+        if(firstrow != undefined){
+          this.topscrollHandler($(firstrow).attr('id'));
+        }
+
+      }else if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) == 0){
+        var msgList = $('[data-chat="message-list"]').children();
+        var lastmsg = msgList[msgList.length-1];
+        if(lastmsg != undefined){
+          this.endscrollHandler($(lastmsg).attr('id'));
+        }
+      }
+    });
   }
 
-  createLoadingRing(){
-    let ring = $('<div>',{
-      'class' : "lds-ring"
+  registerEndOfScrollHandler(callback) {
+    this.endscrollHandler = callback;
+  }
+
+  registerTopOfScrollHandler(callback) {
+    this.topscrollHandler = callback;
+  }
+
+  createLoadingRing() {
+    let ring = $('<div>', {
+      'class': "lds-ring"
     });
 
     for (var i = 0; i < 4; i++) {
@@ -146,21 +177,78 @@ export class ChatList {
   }
 
 
-  clearChatList(){
+  clearChatList() {
     $(".message-row").each(function(index) {
       $(this).remove();
     });
+  }
+
+
+  drawMessageToTop({
+    user: u,
+    timestamp: t,
+    message: m,
+    isNewMessage: isNewMessage,
+    id: id
+  }) {
+
+    let $messageRow = $('<li>', {
+      'class': 'message-row',
+      'id': id,
+    })
+
+    if (this.username == u) {
+      $messageRow.addClass('me');
+    }
+
+    let $message = $('<p>');
+
+    $message.append($('<span>', {
+      'class': 'message-username',
+      text: u
+    }));
+
+    $message.append($('<span>', {
+      'class': 'timestamp',
+      'data-time': t,
+      text: moment(t).fromNow()
+    }))
+
+    $message.append($('<span>', {
+      'class': 'message-message',
+      text: m
+    }))
+
+    let $img = $('<img>', {
+      src: createGravatarUrl(u),
+      title: u
+    })
+
+    $messageRow.append($img);
+    $messageRow.append($message);
+    this.$list.prepend($messageRow);
+    $messageRow.get(0).scrollIntoView();
+    $messageRow.css('display', 'flex');
+
+    if (isNewMessage) {
+      $messageRow.addClass('is-new-message');
+      setTimeout(function() {
+        $messageRow.removeClass('is-new-message');
+      }, 2000);
+    }
   }
 
   drawMessage({
     user: u,
     timestamp: t,
     message: m,
-    isNewMessage: isNewMessage
+    isNewMessage: isNewMessage,
+    id: id
   }) {
 
     let $messageRow = $('<li>', {
-      'class': 'message-row'
+      'class': 'message-row',
+      'id': id,
     })
 
     if (this.username == u) {
@@ -202,7 +290,6 @@ export class ChatList {
         $messageRow.removeClass('is-new-message');
       }, 2000);
     }
-    this.$lastAppendMsgRow = $messageRow;
-    $messageRow.get(0).scrollIntoView();
+    //$messageRow.get(0).scrollIntoView();
   }
 }
