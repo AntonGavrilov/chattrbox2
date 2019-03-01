@@ -130,14 +130,6 @@ export class ChatList {
       });
     }, 1000);
 
-    this.$list[0].scroll(()=>{
-      var listHeight = this.$list.innerHeight();
-
-      if(this.$lastAppendMsgRow.position().top + this.$lastAppendMsgRow.innerHeight() >= listHeight){
-        console.log("1");
-      }
-    })
-
 
   }
 
