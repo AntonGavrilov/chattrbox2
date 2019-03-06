@@ -122,6 +122,7 @@ export class ChatList {
     this.username = username;
     this.$loadingRing = this.createLoadingRing();
     this.$lastAppendMsgRow = null;
+    this.autoscroll = false;
     this.timer = setInterval(() => {
       $('[data-time]').each((idx, element) => {
         let $element = $(element);
@@ -154,6 +155,16 @@ export class ChatList {
         }
       }
     });
+  }
+
+  listAtTheEndOfScroll(){
+    var elements = document.getElementsByClassName('list-group panel-default chat-messages');
+    var messagePanel = elements[0];
+
+    if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) == 0){
+      return true;
+    }
+    return false;
   }
 
   registerEndOfScrollHandler(callback) {
@@ -227,7 +238,6 @@ export class ChatList {
     $messageRow.append($img);
     $messageRow.append($message);
     this.$list.prepend($messageRow);
-    $messageRow.get(0).scrollIntoView();
     $messageRow.css('display', 'flex');
 
     if (isNewMessage) {
@@ -281,7 +291,6 @@ export class ChatList {
     $messageRow.append($img);
     $messageRow.append($message);
     this.$list.append($messageRow);
-    $messageRow.get(0).scrollIntoView();
     $messageRow.css('display', 'flex');
 
     if (isNewMessage) {
@@ -290,6 +299,20 @@ export class ChatList {
         $messageRow.removeClass('is-new-message');
       }, 2000);
     }
-    //$messageRow.get(0).scrollIntoView();
+
+    var elements = document.getElementsByClassName('list-group panel-default chat-messages');
+    var messagePanel = elements[0];
+
+    if(this.autoscroll = true){
+      $messageRow.get(0).scrollIntoView();
+    }
+
+    /*
+    if(messagePanel.scrollTop > 0){
+      messagePanel.scrollTop = messagePanel.scrollTop - 1;
+
+    }
+    */
+    console.log(messagePanel.scrollTop)
   }
 }

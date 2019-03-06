@@ -87,7 +87,7 @@ class ChatApp {
         let message = new ChatMessage(data);
 
         if (message.messageType == "message") {
-          if (message.room == currentRoom) {
+          if (message.room == currentRoom && this.chatList.listAtTheEndOfScroll()) {
             if(message.append)
             {
               this.chatList.drawMessage(message.serialize());

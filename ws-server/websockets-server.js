@@ -211,9 +211,6 @@ class Server {
         var currentClient = this.clients.get(socket);
         var currentRoom = this.roomList[message.room];
 
-
-        this.pushMessageToCache(message);
-
         if (currentRoom != undefined &&
           currentRoom != currentClient.currentRoom)
           currentClient.changeCurrentRoom(currentRoom);
@@ -227,6 +224,14 @@ class Server {
             socket.send(data);
           }
         }, this)
+        
+        var messageCopy = Object.assign({}, message);
+
+        messageCopy.isNewMessage = false;
+
+        this.pushMessageToCache(messageCopy);
+
+
       })
     })
   }
