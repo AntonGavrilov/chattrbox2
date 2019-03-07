@@ -122,7 +122,7 @@ export class ChatList {
     this.username = username;
     this.$loadingRing = this.createLoadingRing();
     this.$lastAppendMsgRow = null;
-    this.autoscroll = false;
+  //  this.autoscroll = false;
     this.timer = setInterval(() => {
       $('[data-time]').each((idx, element) => {
         let $element = $(element);
@@ -161,7 +161,7 @@ export class ChatList {
     var elements = document.getElementsByClassName('list-group panel-default chat-messages');
     var messagePanel = elements[0];
 
-    if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) == 0){
+    if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) <= 80){
       return true;
     }
     return false;
@@ -303,16 +303,11 @@ export class ChatList {
     var elements = document.getElementsByClassName('list-group panel-default chat-messages');
     var messagePanel = elements[0];
 
-    if(this.autoscroll = true){
-      $messageRow.get(0).scrollIntoView();
-    }
+    var shiftLength = messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight;
 
-    /*
+
     if(messagePanel.scrollTop > 0){
-      messagePanel.scrollTop = messagePanel.scrollTop - 1;
-
+      messagePanel.scrollTop = messagePanel.scrollTop + shiftLength - 20;
     }
-    */
-    console.log(messagePanel.scrollTop)
   }
 }
