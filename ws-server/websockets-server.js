@@ -153,7 +153,11 @@ class Server {
 
       var currentClient = this.clients.get(socket);
 
+      var lastSeenMsg = currentClient.lastSeenMsgMap[message.room];
+
       var cachedMessages = currentClient.messages[message.room];
+
+      var lstReadMsg = currentClient.getCachedMessageById(lastSeenMsg, message.room);
 
       var firstClientMsg = currentClient.getCachedMessageById(message.message, message.room);
 
@@ -177,6 +181,38 @@ class Server {
       })
     }
   )
+
+  newclient.on("getMoreMessages", (data) => {
+
+    var message = {};
+    message = JSON.parse(data);
+
+    var currentClient = this.clients.get(socket);
+
+    var cachedMessages = currentClient.messages[message.room];
+
+    var firstClientMsg = currentClient.getCachedMessageById(message.message, message.room);
+
+    var firstClientMsgIndex = cachedMessages.indexOf(firstClientMsg);
+
+    var outputMessages = [];
+
+    var firstLastMsgIndex = firstClientMsgIndex + 1;
+
+    if(cachedMessages && (firstLastMsgIndex < cachedMessages.length))
+    {
+      var startmsgindex = firstLastMsgIndex;
+      var endmsgindex = Math.min(firstLastMsgIndex + 20, cachedMessages.length);
+      var outputMessages = cachedMessages.slice(startmsgindex, endmsgindex);
+    }
+
+
+    outputMessages.forEach(m => {
+      m.append = true;
+      socket.send(JSON.stringify(m));
+    })
+  }
+)
 
 
       newclient.on("newRoom", (data) => {
@@ -224,16 +260,18 @@ class Server {
             socket.send(data);
           }
         }, this)
-        
+
         var messageCopy = Object.assign({}, message);
 
         messageCopy.isNewMessage = false;
 
         this.pushMessageToCache(messageCopy);
-
-
       })
     })
+  }
+
+  sendMessageToClient(client, msg){
+    client.sendMessage(msg)
   }
 
   pushMessageToCache(message){

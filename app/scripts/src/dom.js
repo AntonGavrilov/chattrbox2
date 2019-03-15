@@ -132,7 +132,8 @@ export class ChatList {
       });
     }, 1000);
 
-    $('.list-group.panel-default.chat-messages').scroll(() => {
+    $('.list-group.panel-default.chat-messages').scroll((e) => {
+
       var elements = document.getElementsByClassName('list-group panel-default chat-messages');
       var messagePanel = elements[0];
 
@@ -161,7 +162,7 @@ export class ChatList {
     var elements = document.getElementsByClassName('list-group panel-default chat-messages');
     var messagePanel = elements[0];
 
-    if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) <= 80){
+    if((messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight) <= messagePanel.clientHeight){
       return true;
     }
     return false;
@@ -300,14 +301,14 @@ export class ChatList {
       }, 2000);
     }
 
-    var elements = document.getElementsByClassName('list-group panel-default chat-messages');
-    var messagePanel = elements[0];
+    if(this.listAtTheEndOfScroll()){
+      var elements = document.getElementsByClassName('list-group panel-default chat-messages');
+      var messagePanel = elements[0];
 
-    var shiftLength = messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight;
+      var shiftLength = messagePanel.scrollHeight - messagePanel.scrollTop - messagePanel.clientHeight;
 
-
-    if(messagePanel.scrollTop > 0){
       messagePanel.scrollTop = messagePanel.scrollTop + shiftLength - 20;
+
     }
   }
 }

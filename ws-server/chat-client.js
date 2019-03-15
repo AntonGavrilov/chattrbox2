@@ -24,6 +24,11 @@ class ChatClient{
     }
   }
 
+  sendMessage(message){
+    this.pushMessageToCache(message);
+    socket.send(data);
+  }
+
   readMessage(id, room){
     var cachedMessage = this.getCachedMessageById(id, room);
     cachedMessage.isNewMessage = false;

@@ -1,43 +1,95 @@
 <!doctype html>
 <html>
-  <head>
-    <title>Chattrbox</title>
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/stylesheets/styles.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
 
-  </head>
-  <body class="container chat-wrapper">
+<head>
+  <title>you, me, now</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="/stylesheets/styles.css">
 
-    <header class="chat-app-header">
-      <h1>Chattrbox</h1>
-    </header>
+</head>
 
-    <div class="panel panel-default chat">
-      <div class="panel panel-default chat-rooms">
-          <ul class="list-group chat-message-rooms" data-chat="room-list">
-          </ul>
-      </div>
-      <div class="list-group panel-default chat-messages">
-          <ul class="panel-body chat-message-list" data-chat="message-list"></ul>
-      </div>
+<body class="container chat-wrapper">
+  <div class="my-head">
+    <div class="drp-head">
+      <nav id="navbar-example" class="navbar navbar-default navbar-static">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button class="navbar-toggle collapsed" type="button" data-toggle="collapse" data-target=".bs-example-js-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          </div>
+          <div class="collapse navbar-collapse bs-example-js-navbar-collapse">
+            <ul class="menu-nav navbar-nav">
+              <li class="menu-dropdown dropdown">
+                <a id="drop1" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                <img  class="menu-image" src="menu.png" alt="logo">
+              </a>
+                <ul class="dropdown-menu" aria-labelledby="drop1">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider">
+                  </li>
+                  <li><a href="#">Separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+            <ul class="nav navbar-nav navbar-right">
+              <li id="fat-menu" class="dropdown">
+                <a id="drop3" href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                Dropdown
+                <span class="caret"></span>
+              </a>
+                <ul class="dropdown-menu" aria-labelledby="drop3">
+                  <li><a href="#">Action</a></li>
+                  <li><a href="#">Another action</a></li>
+                  <li><a href="#">Something else here</a></li>
+                  <li role="separator" class="divider">
+                  </li>
+                  <li><a href="#">Separated link</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+          <!-- /.nav-collapse -->
+        </div>
+        <!-- /.container-fluid -->
+      </nav>
     </div>
+  </div>
+
+  <div class="panel panel-default chat">
+    <div class="panel panel-default chat-rooms">
+      <ul class="list-group chat-message-rooms" data-chat="room-list">
+      </ul>
+    </div>
+    <div class="list-group panel-default chat-messages">
+      <ul class="panel-body chat-message-list" data-chat="message-list"></ul>
+    </div>
+  </div>
 
 
-    <section class="chat-input">
-      <form data-chat="chat-form" class="cb-container">
-        <div class="input-group">
-          <label for="js-message-input" class="sr-only">Message:</label>
-          <input type="text" class="form-control" data-chat="message-input" autofocus>
-          <span class="input-group-btn">
+  <section class="chat-input">
+    <form data-chat="chat-form" class="cb-container">
+      <div class="input-group">
+        <label for="js-message-input" class="sr-only">Message:</label>
+        <input type="text" class="form-control" data-chat="message-input" autofocus>
+        <span class="input-group-btn">
             <button class="btn btn-default" type="button">Go!</button>
             <button class="btn btn-newRoom" type="button">New room</button>
             <button class="btn btn-joinRoom" type="button">Join room</button>
           </span>
-        </div><!-- /input-group -->
-      </form>
-    </section>
-    <script src="/scripts/dist/main.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
-  </body>
+      </div>
+      <!-- /input-group -->
+    </form>
+  </section>
+  <script src="/scripts/dist/main.js"></script>
+
+</body>
+
 </html>
